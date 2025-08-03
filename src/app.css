@@ -1,0 +1,461 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DRIPLO.BG - BULGARIAN MARKETPLACE DESIGN SYSTEM
+   Built for speed, trust, and mobile-first experience
+   Tailwind CSS v4 with strict performance budget
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ─────────────────────────────────────────────────────────────────────
+     COLOR SYSTEM - 5 colors total, no BS
+     ───────────────────────────────────────────────────────────────────── */
+  
+  /* Core Colors (80% of UI) */
+  --color-white: #FFFFFF;
+  --color-gray-50: #F9FAFB;    /* Slight background */
+  --color-gray-200: #E5E7EB;   /* Borders */
+  --color-gray-900: #111827;   /* Text */
+  
+  /* Action Colors (20% of UI) */
+  --color-brand: #DC2626;      /* Red like OLX - urgency works */
+  --color-success: #10B981;    /* Green for money/verified */
+  
+  /* Semantic Aliases for shadcn compatibility */
+  --color-background: var(--color-white);
+  --color-foreground: var(--color-gray-900);
+  --color-card: var(--color-white);
+  --color-card-foreground: var(--color-gray-900);
+  --color-popover: var(--color-white);
+  --color-popover-foreground: var(--color-gray-900);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: var(--color-white);
+  --color-secondary: var(--color-gray-50);
+  --color-secondary-foreground: var(--color-gray-900);
+  --color-muted: var(--color-gray-50);
+  --color-muted-foreground: #6B7280;  /* gray-500 for muted text */
+  --color-accent: var(--color-gray-50);
+  --color-accent-foreground: var(--color-gray-900);
+  --color-destructive: var(--color-brand);
+  --color-destructive-foreground: var(--color-white);
+  --color-border: var(--color-gray-200);
+  --color-input: var(--color-gray-200);
+  --color-ring: var(--color-brand);
+  
+  /* ─────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY - Cyrillic-first, mobile-optimized
+     ───────────────────────────────────────────────────────────────────── */
+  
+  /* Font Stack - Inter loaded, system fallbacks */
+  --font-sans: 'Inter', -apple-system, 'Segoe UI', 'Roboto', 'Ubuntu', sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  
+  /* Sizes - Only what we need */
+  --text-xs: 0.75rem;    /* 12px - metadata */
+  --text-sm: 0.875rem;   /* 14px - body */
+  --text-base: 1rem;     /* 16px - default */
+  --text-lg: 1.25rem;    /* 20px - headings */
+  --text-xl: 1.5rem;     /* 24px - page titles */
+  --text-2xl: 1.875rem;  /* 30px - hero */
+  
+  /* Weights - Reduced set */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line Heights - Mobile-first */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  
+  /* ─────────────────────────────────────────────────────────────────────
+     SPACING - Strict 4px grid (every value divisible by 4)
+     ───────────────────────────────────────────────────────────────────── */
+  
+  --spacing-0: 0;
+  --spacing-1: 4px;      /* 0.25rem */
+  --spacing-2: 8px;      /* 0.5rem */
+  --spacing-3: 12px;     /* 0.75rem */
+  --spacing-4: 16px;     /* 1rem */
+  --spacing-5: 20px;     /* 1.25rem */
+  --spacing-6: 24px;     /* 1.5rem */
+  --spacing-8: 32px;     /* 2rem */
+  --spacing-10: 40px;    /* 2.5rem */
+  --spacing-12: 48px;    /* 3rem */
+  --spacing-16: 64px;    /* 4rem */
+  --spacing-20: 80px;    /* 5rem */
+  --spacing-24: 96px;    /* 6rem */
+  
+  /* ─────────────────────────────────────────────────────────────────────
+     ANIMATION - 0ms or 200ms, nothing between
+     ───────────────────────────────────────────────────────────────────── */
+  
+  --duration-instant: 0ms;
+  --duration-fast: 150ms;
+  --duration-200: 200ms;
+  
+  /* Single easing for consistency */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ─────────────────────────────────────────────────────────────────────
+     SHADOWS - Minimal depth
+     ───────────────────────────────────────────────────────────────────── */
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  
+  /* ─────────────────────────────────────────────────────────────────────
+     BORDERS & RADIUS
+     ───────────────────────────────────────────────────────────────────── */
+  
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ROOT VARIABLES - CSS Custom Properties
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Light mode (default) */
+  --background: #FFFFFF;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #DC2626;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F9FAFB;
+  --secondary-foreground: #111827;
+  --muted: #F9FAFB;
+  --muted-foreground: #6B7280;
+  --accent: #F9FAFB;
+  --accent-foreground: #111827;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #DC2626;
+  --radius: 0.5rem;
+  
+  /* Chart colors for data viz */
+  --chart-1: #DC2626;
+  --chart-2: #10B981;
+  --chart-3: #3B82F6;
+  --chart-4: #F59E0B;
+  --chart-5: #8B5CF6;
+}
+
+/* Dark mode support (minimal changes) */
+.dark {
+  --background: #0A0A0A;
+  --foreground: #FAFAFA;
+  --card: #0A0A0A;
+  --card-foreground: #FAFAFA;
+  --popover: #0A0A0A;
+  --popover-foreground: #FAFAFA;
+  --primary: #EF4444;
+  --primary-foreground: #0A0A0A;
+  --secondary: #262626;
+  --secondary-foreground: #FAFAFA;
+  --muted: #262626;
+  --muted-foreground: #A3A3A3;
+  --accent: #262626;
+  --accent-foreground: #FAFAFA;
+  --destructive: #7F1D1D;
+  --destructive-foreground: #FAFAFA;
+  --border: #262626;
+  --input: #262626;
+  --ring: #EF4444;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE-FIRST UTILITIES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  /* Safe area padding for mobile devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Bottom navigation with safe area */
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    height: calc(56px + env(safe-area-inset-bottom));
+  }
+  
+  /* Thumb zone positioning */
+  .thumb-zone {
+    position: fixed;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    right: 16px;
+  }
+  
+  /* Swipeable galleries */
+  .swipe-gallery {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  
+  .swipe-item {
+    scroll-snap-align: start;
+  }
+  
+  /* Performance optimizations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  .contain-layout {
+    contain: layout;
+  }
+  
+  .contain-paint {
+    contain: paint;
+  }
+  
+  .contain-strict {
+    contain: strict;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SKELETON LOADERS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #F9FAFB 25%,
+    #E5E7EB 50%,
+    #F9FAFB 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+  height: 1em;
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    90deg,
+    #F9FAFB 25%,
+    #E5E7EB 50%,
+    #F9FAFB 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card {
+  height: 200px;
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    90deg,
+    #F9FAFB 25%,
+    #E5E7EB 50%,
+    #F9FAFB 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TRUST INDICATORS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.verified-badge {
+  @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium;
+  @apply bg-success/10 text-success rounded-full;
+}
+
+.verified-badge::before {
+  content: '✓';
+  @apply inline-block w-3 h-3 text-[10px] leading-3 text-center;
+  @apply bg-success text-white rounded-full;
+}
+
+.response-time {
+  @apply text-xs text-muted-foreground;
+}
+
+.online-indicator {
+  @apply relative;
+}
+
+.online-indicator::after {
+  content: '';
+  @apply absolute bottom-0 right-0 w-3 h-3;
+  @apply bg-success rounded-full border-2 border-white;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUICK ACTIONS (Bulgarian-specific)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.quick-action {
+  @apply px-3 py-2 text-sm font-medium;
+  @apply bg-gray-50 border border-gray-200 rounded-lg;
+  @apply active:scale-95;
+}
+
+.quick-action-primary {
+  @apply px-3 py-2 text-sm font-medium rounded-lg active:scale-95;
+  @apply bg-brand text-white border-brand;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PERFORMANCE CRITICAL CSS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Reduce animation for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Force hardware acceleration for critical animations */
+.animate-in {
+  animation-duration: var(--duration-200);
+  animation-timing-function: var(--ease-default);
+  animation-fill-mode: both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LAYOUT UTILITIES
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Container with Bulgarian market standards */
+.container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+    padding-inline: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COMPONENT OVERRIDES - Fix shadcn for marketplace
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Remove all unnecessary animations */
+.accordion-content,
+.dialog-content,
+.popover-content,
+.sheet-content {
+  animation: none !important;
+}
+
+/* Simplify button styles */
+.btn {
+  @apply px-4 py-2 font-medium rounded-lg;
+  @apply transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply px-4 py-2 font-medium rounded-lg transition-colors duration-200;
+  @apply bg-brand text-white hover:bg-brand/90;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 font-medium rounded-lg transition-colors duration-200;
+  @apply bg-gray-50 text-gray-900 hover:bg-gray-200;
+}
+
+/* Product cards optimized for mobile */
+.product-card {
+  @apply bg-white rounded-lg overflow-hidden;
+  @apply border border-gray-200;
+  contain: layout style;
+}
+
+.product-card img {
+  @apply w-full aspect-[4/3] object-cover;
+}
+
+.product-price {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.product-meta {
+  @apply text-sm text-muted-foreground;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PRINT STYLES - For order receipts
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a, a:visited {
+    text-decoration: underline;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
