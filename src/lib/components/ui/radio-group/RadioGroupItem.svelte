@@ -34,9 +34,10 @@
 	)}
 	{...restProps}
 >
-	<RadioGroupPrimitive.ItemIndicator class="flex items-center justify-center">
-		<div class="h-2 w-2 rounded-full bg-current"></div>
-	</RadioGroupPrimitive.ItemIndicator>
+	<!-- Radio indicator -->
+	<div class="flex items-center justify-center">
+		<div class="h-2 w-2 rounded-full bg-current opacity-0 data-[state=checked]:opacity-100 transition-opacity"></div>
+	</div>
 	{#if children}
 		{@render children()}
 	{/if}

@@ -59,16 +59,16 @@
 	<!-- Full view for seller profiles -->
 	<div class="space-y-3 p-4 bg-gray-50 rounded-lg">
 		<!-- Trust Score Bar -->
-		{#if trustScore > 0}
+		{#if trustScore() > 0}
 			<div class="space-y-1">
 				<div class="flex items-center justify-between text-sm">
 					<span class="font-medium">Ниво на доверие</span>
-					<span class="text-muted-foreground">{trustScore}%</span>
+					<span class="text-muted-foreground">{trustScore()}%</span>
 				</div>
 				<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
 					<div 
 						class="h-full bg-success transition-all duration-500"
-						style="width: {trustScore}%"
+						style="width: {trustScore()}%"
 					></div>
 				</div>
 			</div>

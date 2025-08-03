@@ -90,21 +90,24 @@ export async function initSentry() {
 	
 	try {
 		// Dynamic import to avoid errors if Sentry is not installed
-		const Sentry = await import('@sentry/sveltekit').catch(() => null);
+		// const Sentry = await import('@sentry/sveltekit').catch(() => null);
+		const Sentry = null; // Disabled for now
 		
 		if (!Sentry) {
 			console.warn('Sentry SDK not installed. Run: pnpm add @sentry/sveltekit');
 			return;
 		}
 		
-		Sentry.init({
-			dsn: sentryConfig.dsn,
-			environment: sentryConfig.environment,
-			tracesSampleRate: sentryConfig.tracesSampleRate,
-			debug: sentryConfig.debug,
-			integrations: sentryConfig.integrations,
-			beforeSend: sentryConfig.beforeSend
-		});
+		if (Sentry) {
+			Sentry.init({
+				dsn: sentryConfig.dsn,
+				environment: sentryConfig.environment,
+				tracesSampleRate: sentryConfig.tracesSampleRate,
+				debug: sentryConfig.debug,
+				integrations: sentryConfig.integrations,
+				beforeSend: sentryConfig.beforeSend
+			});
+		}
 		
 		console.log('Sentry initialized successfully');
 	} catch (error) {

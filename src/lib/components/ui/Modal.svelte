@@ -225,7 +225,7 @@
 	});
 	
 	// Determine the role based on type
-	const dialogRole: 'dialog' | 'alertdialog' = $derived(() => {
+	const dialogRole = $derived(() => {
 		return type === 'alert' ? 'alertdialog' : 'dialog';
 	});
 </script>
@@ -233,7 +233,7 @@
 {#if open}
 	<div 
 		class="fixed inset-0 z-50" 
-		role={dialogRole}
+		role={dialogRole()}
 		aria-modal="true"
 		aria-label={ariaLabel}
 		aria-labelledby={ariaLabelledby || (title ? 'modal-title' : undefined)}
@@ -252,7 +252,7 @@
 		<!-- Modal content -->
 		<div 
 			class={cn("fixed z-50", positionClasses())}
-			use:focusTrap={{ enabled: open, onDeactivate: handleClose }}
+			use:focusTrap={{ onDeactivate: handleClose }}
 		>
 			<div 
 				class={contentClasses()}

@@ -6,11 +6,16 @@
   import { captureException } from '$lib/config/sentry';
   import * as m from '$lib/paraglide/messages.js';
   import Button from '$lib/components/ui/button.svelte';
+  import type { Snippet } from 'svelte';
 
   // ErrorBoundary Props type
   interface ErrorBoundaryProps {
-    fallback?: Snippet<[{ error: Error; reset: () => void }]>;
-    onError?: (error: Error) => void;
+    error?: Error | null;
+    reset?: (() => void) | null;
+    fallback?: Snippet<[{ error: Error; reset: () => void }]> | null;
+    level?: 'minimal' | 'detailed';
+    isolate?: boolean;
+    onError?: ((error: Error, errorContext?: any) => void) | null;
     resetKeys?: any[];
     enableSentry?: boolean;
     captureError?: boolean;
@@ -79,7 +84,7 @@
       // Call custom error handler
       if (onError) {
         try {
-          onError(error, errorContext);
+          onError(error);
         } catch (handlerError) {
           console.error('Error in onError handler:', handlerError);
         }
@@ -164,7 +169,7 @@
         </Button>
       </div>
     </div>
-  {:else if level === 'custom' && fallback}
+  {:else if fallback}
     <!-- Custom fallback -->
     {@html fallback}
   {:else}
@@ -181,7 +186,7 @@
           </div>
           <div class="ml-3">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {m.error_boundary_title()}
+              Error Occurred
             </h3>
             <p class="text-xs text-gray-500 dark:text-gray-400">
               Error ID: {errorId}
@@ -244,7 +249,7 @@
             variant="default"
             class="flex-1"
           >
-            {m.error_boundary_retry()}
+            Try Again
           </Button>
           <Button
             onclick={handleReload}
@@ -257,7 +262,7 @@
             href="/"
             class="flex-1 text-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-sm px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-100 text-sm"
           >
-            {m.error_boundary_home()}
+            Go Home
           </a>
         </div>
       </div>
