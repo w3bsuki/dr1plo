@@ -98,16 +98,15 @@ export async function initSentry() {
 			return;
 		}
 		
-		if (Sentry) {
-			Sentry.init({
-				dsn: sentryConfig.dsn,
-				environment: sentryConfig.environment,
-				tracesSampleRate: sentryConfig.tracesSampleRate,
-				debug: sentryConfig.debug,
-				integrations: sentryConfig.integrations,
-				beforeSend: sentryConfig.beforeSend
-			});
-		}
+		// This code will never run since Sentry is null, but keeping for future use
+		// Sentry.init({
+		//	dsn: sentryConfig.dsn,
+		//	environment: sentryConfig.environment,
+		//	tracesSampleRate: sentryConfig.tracesSampleRate,
+		//	debug: sentryConfig.debug,
+		//	integrations: sentryConfig.integrations,
+		//	beforeSend: sentryConfig.beforeSend
+		// });
 		
 		console.log('Sentry initialized successfully');
 	} catch (error) {

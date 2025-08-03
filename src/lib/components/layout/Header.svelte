@@ -1,43 +1,79 @@
 <script lang="ts">
-	import { Search, ShoppingBag, User, Menu, Heart, ChevronDown, Bell } from '@lucide/svelte';
-	import Button from '$lib/components/ui/button.svelte';
-	import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '$lib/components/ui/dropdown-menu';
-	import { getTopLevelCategories } from '$lib/services/categoryService';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { Search, ShoppingBag, User, Heart, ChevronDown, MessageCircle, Home, Grid3x3, Plus, Bell } from '@lucide/svelte';
+	
+	import Button from '$lib/components/ui/button.svelte';
+	import Input from '$lib/components/ui/input/input.svelte';
+	import Select from '$lib/components/ui/select/select.svelte';
+	import SelectTrigger from '$lib/components/ui/select/SelectTrigger.svelte';
+	import SelectContent from '$lib/components/ui/select/SelectContent.svelte';
+	import SelectItem from '$lib/components/ui/select/SelectItem.svelte';
+	import LazyAvatar from '$lib/components/ui/avatar/LazyAvatar.svelte';
+
+	import { getTopLevelCategories } from '$lib/services/categoryService';
 	import type { Database } from '$lib/types/db';
-	
+
 	type Category = Database['public']['Tables']['categories']['Row'];
-	
+
 	let searchQuery = $state('');
 	let showMobileMenu = $state(false);
 	let showCategoriesDropdown = $state(false);
 	let selectedCategory = $state('All Categories');
 	let categories = $state<Category[]>([]);
 	let isLoadingCategories = $state(false);
-	
-	// Load categories from Supabase on mount
-	onMount(async () => {
-		isLoadingCategories = true;
-		try {
-			categories = await getTopLevelCategories();
-		} catch (error) {
-			console.error('Failed to load categories:', error);
-		} finally {
-			isLoadingCategories = false;
-		}
+	let isScrolled = $state(false);
+
+	// Mock user data
+	let user = $state({
+		isLoggedIn: true,
+		username: 'John Doe',
+		avatar: null
 	});
-	
-	// Create dropdown options including "All Categories"
+
+	// Load categories and handle scroll
+	onMount(() => {
+		async function loadCategories() {
+			isLoadingCategories = true;
+			try {
+				categories = await getTopLevelCategories();
+			} catch (error) {
+				console.error('Failed to load categories:', error);
+			} finally {
+				isLoadingCategories = false;
+			}
+		}
+		
+		loadCategories();
+		
+		// Simple scroll handler
+		function handleScroll() {
+			isScrolled = window.scrollY > 20;
+		}
+		
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		return () => window.removeEventListener('scroll', handleScroll);
+	});
+
+	// Create dropdown options
 	let categoryOptions = $derived([
 		'All Categories',
 		...categories.map(cat => cat.name)
 	]);
-	
+
 	function selectCategory(category: string) {
 		selectedCategory = category;
 		showCategoriesDropdown = false;
 	}
-	
+
+	// Handle search
+	async function handleSearch() {
+		if (searchQuery.trim()) {
+			await goto(`/search?q=${encodeURIComponent(searchQuery)}&cat=${selectedCategory}`);
+		}
+	}
+
 	// Close dropdown when clicking outside
 	$effect(() => {
 		function handleClickOutside(event: MouseEvent) {
@@ -54,202 +90,233 @@
 	});
 </script>
 
-<header class="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-	<div class="container flex h-20 items-center px-4 mx-auto max-w-7xl">
-		<!-- Logo -->
-		<div class="flex items-center mr-8">
-			<a href="/" class="flex items-center space-x-2">
-				<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 to-pink-400 text-white font-bold text-lg shadow-lg">
-					D
+<!-- Mobile Header -->
+<div class="md:hidden">
+	<!-- Fixed header -->
+	<div class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+		<!-- Top bar -->
+		<div class="flex items-center justify-between h-11 px-3 bg-gradient-to-r from-primary to-primary/90">
+			<!-- Logo -->
+			<a href="/" class="flex items-center gap-1.5">
+				<div class="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+					<span class="text-primary font-bold text-sm">D</span>
 				</div>
-				<span class="hidden font-bold text-2xl text-gray-900 sm:inline-block">Driplo</span>
+				<span class="font-bold text-white text-lg">Driplo</span>
 			</a>
+			
+			<!-- Actions -->
+			<div class="flex items-center gap-2">
+				<button onclick={() => goto('/messages')} class="p-1.5 text-white/90 hover:text-white">
+					<MessageCircle class="h-5 w-5" />
+				</button>
+				{#if user.isLoggedIn}
+					<button onclick={() => goto('/profile')} class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/20 rounded-full">
+						<User class="h-4 w-4 text-white" />
+						<span class="text-xs font-medium text-white">Профил</span>
+					</button>
+				{:else}
+					<button onclick={() => goto('/auth/login')} class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-full">
+						<User class="h-4 w-4 text-primary" />
+						<span class="text-xs font-medium text-primary">Вход</span>
+					</button>
+				{/if}
+			</div>
 		</div>
 		
-		<!-- Main Search Section -->
-		<div class="hidden md:flex flex-1 max-w-2xl">
-			<div class="flex w-full rounded-full border border-gray-300 bg-white shadow-sm overflow-hidden">
-				<!-- Category Dropdown -->
-				<div class="relative" data-dropdown>
-					<button
-						onclick={() => showCategoriesDropdown = !showCategoriesDropdown}
-						class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-300 hover:bg-gray-100 transition-colors"
-					>
-						<span class="truncate max-w-32">{selectedCategory}</span>
-						<ChevronDown class="ml-2 h-4 w-4" />
-					</button>
-					
-					{#if showCategoriesDropdown}
-						<div class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-							{#if isLoadingCategories}
-								<div class="px-4 py-3 text-sm text-gray-500 text-center">
-									Loading categories...
-								</div>
-							{:else}
-								{#each categoryOptions as category}
-									<button
-										onclick={() => selectCategory(category)}
-										class="block w-full px-4 py-3 text-left text-sm hover:bg-purple-50 transition-colors {selectedCategory === category ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'}"
-									>
-										{category}
-									</button>
-								{/each}
-							{/if}
-						</div>
-					{/if}
-				</div>
+		<!-- Search bar -->
+		<div class="px-3 py-2 bg-gray-50">
+			<div class="flex h-10 bg-white rounded-lg border-2 border-primary/20 overflow-hidden">
+				<!-- Category dropdown -->
+				<button
+					onclick={() => showCategoriesDropdown = !showCategoriesDropdown}
+					data-dropdown
+					class="flex items-center gap-0.5 px-3 border-r border-gray-200"
+				>
+					<span class="text-sm">🛍️</span>
+					<ChevronDown class="h-3 w-3 text-gray-500" />
+				</button>
 				
-				<!-- Search Input -->
-				<div class="relative flex-1">
+				<!-- Search input -->
+				<div class="flex-1 relative flex items-center">
+					<Search class="absolute left-3 h-4 w-4 text-gray-400" />
 					<input
 						type="text"
 						bind:value={searchQuery}
-						placeholder="Search for items, brands and more..."
-						class="w-full px-4 py-3 text-sm focus:outline-none"
+						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+						placeholder="Търси продукти..."
+						class="w-full h-full pl-9 pr-8 text-sm bg-white focus:outline-none"
 					/>
+					{#if searchQuery}
+						<button onclick={() => searchQuery = ''} class="absolute right-2 text-gray-400">
+							✕
+						</button>
+					{/if}
 				</div>
-				
-				<!-- Search Button -->
-				<button class="px-6 py-3 bg-purple-600 text-white hover:bg-purple-700 transition-colors">
-					<Search class="h-5 w-5" />
-				</button>
-			</div>
-		</div>
-		
-		<!-- Desktop Navigation -->
-		<nav class="hidden lg:flex items-center space-x-8 ml-8">
-			<a href="/browse" class="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors">
-				Browse
-			</a>
-			<a href="/sell" class="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors">
-				Sell
-			</a>
-			<a href="/about" class="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors">
-				About
-			</a>
-		</nav>
-		
-		<!-- Desktop Actions -->
-		<div class="hidden md:flex items-center space-x-3 ml-8">
-			<Button variant="ghost" size="icon" class="relative">
-				<Bell class="h-5 w-5" />
-				<span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
-			</Button>
-			<Button variant="ghost" size="icon" class="relative">
-				<Heart class="h-5 w-5" />
-			</Button>
-			<Button variant="ghost" size="icon" class="relative">
-				<ShoppingBag class="h-5 w-5" />
-				<span class="absolute -top-1 -right-1 h-5 w-5 bg-purple-600 rounded-full text-xs text-white flex items-center justify-center">2</span>
-			</Button>
-			<div class="w-px h-8 bg-gray-300 mx-2"></div>
-			<Button variant="ghost" size="icon">
-				<User class="h-5 w-5" />
-			</Button>
-			<Button class="bg-purple-600 hover:bg-purple-700 text-white">
-				Sign In
-			</Button>
-		</div>
-		
-		<!-- Mobile Actions -->
-		<div class="flex md:hidden items-center ml-auto space-x-2">
-			<Button variant="ghost" size="icon" class="relative">
-				<Bell class="h-5 w-5" />
-				<span class="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-			</Button>
-			<Button variant="ghost" size="icon" class="relative">
-				<ShoppingBag class="h-5 w-5" />
-				<span class="absolute -top-1 -right-1 h-4 w-4 bg-purple-600 rounded-full text-[10px] text-white flex items-center justify-center">2</span>
-			</Button>
-		</div>
-	</div>
-	
-	<!-- Mobile Search Bar - Clean and Modern -->
-	<div class="md:hidden bg-gradient-to-b from-gray-50 to-white px-3 py-2">
-		<div class="flex items-center bg-white rounded-xl shadow-sm border border-gray-200 relative">
-			<!-- All/Category Button -->
-			<button
-				onclick={() => showCategoriesDropdown = !showCategoriesDropdown}
-				class="flex items-center gap-1 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-l-xl transition-colors"
-				data-dropdown
-			>
-				<span class="text-purple-600 font-semibold">
-					{selectedCategory === 'All Categories' ? 'All' : selectedCategory.slice(0, 8)}
-				</span>
-				<ChevronDown class={`h-3.5 w-3.5 text-gray-400 transition-transform ${showCategoriesDropdown ? 'rotate-180' : ''}`} />
-			</button>
-			
-			<!-- Divider -->
-			<div class="w-px h-6 bg-gray-200"></div>
-				
-			
-			<!-- Search Input with Icon -->
-			<div class="flex-1 flex items-center px-3">
-				<Search class="h-4 w-4 text-gray-400 mr-2" />
-				<input
-					type="text"
-					bind:value={searchQuery}
-					placeholder="Search for anything..."
-					class="w-full py-2.5 text-sm focus:outline-none bg-transparent placeholder:text-gray-400"
-				/>
 			</div>
 			
-			<!-- Search Button -->
-			<button class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-r-xl hover:opacity-90 transition-opacity">
-				<Search class="h-4 w-4" />
-			</button>
-		</div>
-		
-		<!-- Dropdown for Categories -->
-		{#if showCategoriesDropdown}
-			<div class="absolute left-3 right-3 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
-				{#if isLoadingCategories}
-					<div class="px-4 py-3 text-sm text-gray-500 text-center">
-						Loading categories...
-					</div>
-				{:else}
+			<!-- Category dropdown -->
+			{#if showCategoriesDropdown}
+				<div class="absolute left-3 right-3 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
 					<div class="py-1">
 						{#each categoryOptions as category}
 							<button
 								onclick={() => selectCategory(category)}
-								class="block w-full px-4 py-2.5 text-left text-sm hover:bg-purple-50 transition-colors {selectedCategory === category ? 'bg-purple-50 text-purple-700 font-semibold' : 'text-gray-700'}"
+								class="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
 							>
-								{category === 'All Categories' ? '🛍️ All Categories' : `📦 ${category}`}
+								{#if category === 'All Categories'}
+									<span>🛍️</span> Всички
+								{:else}
+									<span>{categories.find(cat => cat.name === category)?.icon || '📦'}</span> {category}
+								{/if}
 							</button>
 						{/each}
 					</div>
-				{/if}
+				</div>
+			{/if}
+		</div>
+		
+		<!-- Quick pills - hide when scrolled -->
+		{#if !isScrolled}
+			<div class="px-3 pt-0.5 pb-1.5 bg-white border-b border-gray-100">
+				<div class="flex gap-2 overflow-x-auto pb-0.5" style="scrollbar-width: none; -ms-overflow-style: none;">
+					<button onclick={() => goto('/browse?gender=women')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👗 Жени</button>
+					<button onclick={() => goto('/browse?gender=men')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👔 Мъже</button>
+					<button onclick={() => goto('/browse?gender=kids')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">🧸 Деца</button>
+					<button onclick={() => goto('/browse?category=vintage')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">⭐ Винтидж</button>
+					<button onclick={() => goto('/browse?brand=luxury')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">💎 Луксозни</button>
+					<button onclick={() => goto('/browse?condition=new_with_tags')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">🏷️ Ново с етикет</button>
+					<button onclick={() => goto('/browse?condition=like_new')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">✨ Като ново</button>
+					<button onclick={() => goto('/browse?condition=very_good')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👌 Много добро</button>
+					<button onclick={() => goto('/browse?category=shoes')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👟 Обувки</button>
+					<button onclick={() => goto('/browse?category=bags')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👜 Чанти</button>
+					<button onclick={() => goto('/browse?sale=true')} class="px-3 py-1.5 bg-red-500 rounded-full text-xs font-medium whitespace-nowrap text-white">🔥 Намаления</button>
+				</div>
 			</div>
 		{/if}
 	</div>
 	
-	<!-- Mobile Menu -->
-	{#if showMobileMenu}
-		<div class="md:hidden border-t bg-white shadow-lg">
-			<nav class="px-4 py-3 space-y-1">
-				<a href="/browse" class="flex items-center px-3 py-3 text-sm font-medium hover:bg-purple-50 rounded-lg transition-colors">
-					Browse
-				</a>
-				<a href="/sell" class="flex items-center px-3 py-3 text-sm font-medium hover:bg-purple-50 rounded-lg transition-colors">
-					Sell
-				</a>
-				<a href="/notifications" class="flex items-center px-3 py-3 text-sm font-medium hover:bg-purple-50 rounded-lg transition-colors relative">
-					<Bell class="h-4 w-4 mr-3" />
-					Notifications
-					<span class="ml-auto h-2 w-2 bg-red-500 rounded-full"></span>
-				</a>
-				<a href="/profile" class="flex items-center px-3 py-3 text-sm font-medium hover:bg-purple-50 rounded-lg transition-colors">
-					<User class="h-4 w-4 mr-3" />
-					Profile
-				</a>
-				<hr class="my-3 border-gray-200" />
-				<a href="/login" class="flex items-center px-3 py-3 text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-lg transition-colors">
-					Sign In
-				</a>
-				<a href="/register" class="flex items-center px-3 py-3 text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors">
-					Sign Up
-				</a>
-			</nav>
+	<!-- Spacer -->
+	<div style="height: {isScrolled ? '96px' : '128px'}"></div>
+</div>
+
+<!-- Desktop Header -->
+<header class="hidden md:block sticky top-0 z-50 w-full border-b bg-white">
+	<div class="container flex h-20 items-center px-4 mx-auto max-w-7xl">
+		<!-- Logo -->
+		<div class="flex items-center mr-8">
+			<a href="/" class="flex items-center space-x-2">
+				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg">
+					D
+				</div>
+				<span class="font-bold text-2xl text-gray-900">Driplo</span>
+			</a>
 		</div>
-	{/if}
+		
+		<!-- Search -->
+		<div class="flex flex-1 max-w-2xl">
+			<div class="flex w-full rounded-lg border border-gray-200 bg-white overflow-hidden">
+				<!-- Category Dropdown -->
+				<div class="relative" data-dropdown>
+					<Select bind:value={selectedCategory} bind:open={showCategoriesDropdown}>
+						<SelectTrigger class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-200 rounded-none">
+							<span class="truncate max-w-32">{selectedCategory}</span>
+						</SelectTrigger>
+						<SelectContent class="w-48">
+							{#if isLoadingCategories}
+								<div class="px-4 py-3 text-sm text-gray-500 text-center">Loading...</div>
+							{:else}
+								{#each categoryOptions as category}
+									<SelectItem value={category}>
+										{#if category === 'All Categories'}
+											🛍️ {category}
+										{:else}
+											{categories.find(cat => cat.name === category)?.icon || '📦'} {category}
+										{/if}
+									</SelectItem>
+								{/each}
+							{/if}
+						</SelectContent>
+					</Select>
+				</div>
+				
+				<!-- Search Input -->
+				<div class="relative flex-1">
+					<Input
+						type="text"
+						bind:value={searchQuery}
+						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+						placeholder="Search for items, brands and more..."
+						class="w-full px-4 py-3 text-sm border-0 rounded-none bg-white"
+					/>
+				</div>
+				
+				<!-- Search Button -->
+				<Button onclick={handleSearch} class="px-6 py-3 bg-primary text-white rounded-none">
+					<Search class="h-5 w-5" />
+				</Button>
+			</div>
+		</div>
+		
+		<!-- Navigation -->
+		<nav class="hidden lg:flex items-center space-x-8 ml-8">
+			<a href="/browse" class="text-sm font-medium text-gray-700 hover:text-primary">Browse</a>
+			<a href="/sell" class="text-sm font-medium text-gray-700 hover:text-primary">Sell</a>
+			<a href="/about" class="text-sm font-medium text-gray-700 hover:text-primary">About</a>
+		</nav>
+		
+		<!-- Actions -->
+		<div class="flex items-center space-x-3 ml-8">
+			<Button variant="ghost" size="icon">
+				<MessageCircle class="h-5 w-5" />
+			</Button>
+			<Button variant="ghost" size="icon">
+				<Heart class="h-5 w-5" />
+			</Button>
+			<Button variant="ghost" size="icon">
+				<ShoppingBag class="h-5 w-5" />
+			</Button>
+			<div class="w-px h-8 bg-gray-300 mx-2"></div>
+			{#if user.isLoggedIn}
+				<button onclick={() => goto('/profile')}>
+					<LazyAvatar src={user.avatar} username={user.username} size="md" eager={true} />
+				</button>
+			{:else}
+				<Button variant="ghost" size="icon" onclick={() => goto('/auth/login')}>
+					<User class="h-5 w-5" />
+				</Button>
+				<Button class="bg-primary text-white" onclick={() => goto('/auth/signup')}>
+					Sign In
+				</Button>
+			{/if}
+		</div>
+	</div>
 </header>
+
+<!-- Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
+	<div class="flex items-center justify-around py-1.5">
+		<a href="/" class="flex flex-col items-center gap-0.5 p-1.5 {$page.url.pathname === '/' ? 'text-primary' : 'text-gray-500'}">
+			<Home class="h-4 w-4" />
+			<span class="text-[9px] font-medium">Начало</span>
+		</a>
+		<a href="/browse" class="flex flex-col items-center gap-0.5 p-1.5 {$page.url.pathname.startsWith('/browse') ? 'text-primary' : 'text-gray-500'}">
+			<Grid3x3 class="h-4 w-4" />
+			<span class="text-[9px] font-medium">Разгледай</span>
+		</a>
+		<a href="/sell" class="flex flex-col items-center gap-0.5 p-1.5 relative">
+			<div class="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-1.5">
+				<Plus class="h-4 w-4 text-white" />
+			</div>
+			<span class="text-[9px] font-medium text-gray-600">Продай</span>
+		</a>
+		<a href="/favorites" class="flex flex-col items-center gap-0.5 p-1.5 {$page.url.pathname.startsWith('/favorites') ? 'text-primary' : 'text-gray-500'}">
+			<Heart class="h-4 w-4" />
+			<span class="text-[9px] font-medium">Любими</span>
+		</a>
+		<a href="/cart" class="flex flex-col items-center gap-0.5 p-1.5 {$page.url.pathname.startsWith('/cart') ? 'text-primary' : 'text-gray-500'} relative">
+			<ShoppingBag class="h-4 w-4" />
+			<span class="absolute -top-0.5 right-1 h-3 w-3 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center">2</span>
+			<span class="text-[9px] font-medium">Кошница</span>
+		</a>
+	</div>
+</nav>

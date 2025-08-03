@@ -1,8 +1,17 @@
 <script lang="ts">
-	import ProductCard from './ProductCard.svelte';
+	import { Grid, List, Filter, X } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
+	
 	import Button from '$lib/components/ui/button.svelte';
-	import { Grid, List, Filter, SortAsc } from '@lucide/svelte';
+	import Input from '$lib/components/ui/input/input.svelte';
 	import Skeleton from '$lib/components/ui/skeleton.svelte';
+	import Badge from '$lib/components/ui/badge.svelte';
+	import Select from '$lib/components/ui/select/select.svelte';
+	import SelectTrigger from '$lib/components/ui/select/SelectTrigger.svelte';
+	import SelectContent from '$lib/components/ui/select/SelectContent.svelte';
+	import SelectItem from '$lib/components/ui/select/SelectItem.svelte';
+	
+	import ProductCard from './ProductCard.svelte';
 	
 	interface Product {
 		id: string;
@@ -42,14 +51,55 @@
 	
 	let viewMode = $state<'grid' | 'list'>('grid');
 	let sortBy = $state('newest');
-	let showFilterPanel = $state(false);
+	let selectedCondition = $state('');
+	let selectedSize = $state('');
+	let selectedPrice = $state('');
+	let selectedBrand = $state('');
+	
+	const conditions = [
+		{ value: '', label: 'Състояние' },
+		{ value: 'new_with_tags', label: 'Ново с етикет' },
+		{ value: 'like_new', label: 'Като ново' },
+		{ value: 'very_good', label: 'Много добро' },
+		{ value: 'good', label: 'Добро' },
+		{ value: 'fair', label: 'Задоволително' }
+	];
+	
+	const sizes = [
+		{ value: '', label: 'Размер' },
+		{ value: 'XS', label: 'XS' },
+		{ value: 'S', label: 'S' },
+		{ value: 'M', label: 'M' },
+		{ value: 'L', label: 'L' },
+		{ value: 'XL', label: 'XL' },
+		{ value: 'XXL', label: 'XXL' }
+	];
+	
+	const priceRanges = [
+		{ value: '', label: 'Цена' },
+		{ value: 'under-25', label: 'До 25лв' },
+		{ value: '25-50', label: '25-50лв' },
+		{ value: '50-100', label: '50-100лв' },
+		{ value: '100-200', label: '100-200лв' },
+		{ value: '200-plus', label: 'Над 200лв' }
+	];
+	
+	const brands = [
+		{ value: '', label: 'Марка' },
+		{ value: 'zara', label: 'Zara' },
+		{ value: 'hm', label: 'H&M' },
+		{ value: 'nike', label: 'Nike' },
+		{ value: 'adidas', label: 'Adidas' },
+		{ value: 'levis', label: "Levi's" },
+		{ value: 'gucci', label: 'Gucci' },
+		{ value: 'other', label: 'Други' }
+	];
 	
 	const sortOptions = [
-		{ value: 'newest', label: 'Newest' },
-		{ value: 'price-low', label: 'Price: Low to High' },
-		{ value: 'price-high', label: 'Price: High to Low' },
-		{ value: 'popular', label: 'Most Popular' },
-		{ value: 'rating', label: 'Highest Rated' }
+		{ value: 'newest', label: 'Най-нови' },
+		{ value: 'price-low', label: 'Цена ↑' },
+		{ value: 'price-high', label: 'Цена ↓' },
+		{ value: 'popular', label: 'Популярни' }
 	];
 	
 	const gridColsClass = {
@@ -59,134 +109,209 @@
 		'4': 'grid-cols-4',
 		'5': 'grid-cols-5'
 	};
+
+	// Track active filters count
+	let activeFiltersCount = $derived.by(() => {
+		let count = 0;
+		if (selectedCondition) count++;
+		if (selectedSize) count++;
+		if (selectedPrice) count++;
+		if (selectedBrand) count++;
+		return count;
+	});
+
+	// Derived state for filtered and sorted products
+	let filteredAndSortedProducts = $derived.by(() => {
+		let result = [...products];
+		
+		// Apply condition filter
+		if (selectedCondition) {
+			const conditionMap: Record<string, string[]> = {
+				'new_with_tags': ['new', 'new_with_tags'],
+				'like_new': ['like-new', 'like_new', 'very_good'],
+				'very_good': ['very_good', 'good'],
+				'good': ['good'],
+				'fair': ['fair']
+			};
+			const acceptedConditions = conditionMap[selectedCondition] || [selectedCondition];
+			result = result.filter(p => acceptedConditions.includes(p.condition.toLowerCase()));
+		}
+		
+		// Apply size filter
+		if (selectedSize) {
+			result = result.filter(p => p.size.toUpperCase() === selectedSize.toUpperCase());
+		}
+		
+		// Apply price filter
+		if (selectedPrice) {
+			switch (selectedPrice) {
+				case 'under-25':
+					result = result.filter(p => p.price < 25);
+					break;
+				case '25-50':
+					result = result.filter(p => p.price >= 25 && p.price <= 50);
+					break;
+				case '50-100':
+					result = result.filter(p => p.price >= 50 && p.price <= 100);
+					break;
+				case '100-200':
+					result = result.filter(p => p.price >= 100 && p.price <= 200);
+					break;
+				case '200-plus':
+					result = result.filter(p => p.price > 200);
+					break;
+			}
+		}
+		
+		// Apply brand filter
+		if (selectedBrand) {
+			if (selectedBrand === 'other') {
+				const mainBrands = ['zara', 'h&m', 'nike', 'adidas', "levi's", 'gucci'];
+				result = result.filter(p => !mainBrands.includes(p.brand.toLowerCase()));
+			} else {
+				result = result.filter(p => p.brand.toLowerCase().includes(selectedBrand.toLowerCase()));
+			}
+		}
+		
+		// Apply sorting
+		return result.sort((a, b) => {
+			switch (sortBy) {
+				case 'price-low': return a.price - b.price;
+				case 'price-high': return b.price - a.price;
+				case 'popular': return b.reviewCount - a.reviewCount;
+				case 'newest': 
+				default: return 0;
+			}
+		});
+	});
 	
 	function handleProductClick(product: Product) {
-		// Navigate to product detail page
-		window.location.href = `/products/${product.id}`;
+		goto(`/products/${product.id}`);
+	}
+
+	function clearAllFilters() {
+		selectedCondition = '';
+		selectedSize = '';
+		selectedPrice = '';
+		selectedBrand = '';
 	}
 </script>
 
 <div class="w-full">
 	<!-- Header -->
-	<div class="flex items-center justify-between mb-6">
-		<div>
-			<h2 class="text-2xl font-bold text-gray-900">{title}</h2>
-			{#if products.length > 0}
-				<p class="text-gray-600 mt-1">{products.length} items</p>
-			{/if}
-		</div>
-		
-		{#if showFilters || showSorting}
-			<div class="flex items-center gap-3">
-				<!-- View Mode Toggle -->
-				<div class="hidden sm:flex border border-gray-200 rounded-lg p-1">
-					<Button
-						variant={viewMode === 'grid' ? 'default' : 'ghost'}
-						size="icon"
-						class="w-8 h-8"
-						onclick={() => viewMode = 'grid'}
-					>
-						<Grid class="w-4 h-4" />
-					</Button>
-					<Button
-						variant={viewMode === 'list' ? 'default' : 'ghost'}
-						size="icon"
-						class="w-8 h-8"
-						onclick={() => viewMode = 'list'}
-					>
-						<List class="w-4 h-4" />
-					</Button>
-				</div>
-				
-				{#if showSorting}
-					<!-- Sort Dropdown -->
-					<div class="relative">
-						<select 
-							bind:value={sortBy}
-							class="appearance-none bg-white border border-gray-200 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-						>
-							{#each sortOptions as option}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
-						<SortAsc class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-					</div>
-				{/if}
-				
-				{#if showFilters}
-					<!-- Filter Button -->
-					<Button
-						variant="outline"
-						onclick={() => showFilterPanel = !showFilterPanel}
-						class="flex items-center gap-2"
-					>
-						<Filter class="w-4 h-4" />
-						Filters
-					</Button>
-				{/if}
-			</div>
-		{/if}
-	</div>
-	
-	<!-- Filter Panel -->
-	{#if showFilterPanel && showFilters}
-		<div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-				<!-- Price Range -->
-				<div>
-					<span class="block text-sm font-medium text-gray-700 mb-2">Price Range</span>
-					<div class="flex gap-2">
-						<input type="number" placeholder="Min" aria-label="Minimum price" class="w-full px-3 py-2 border border-gray-200 rounded text-sm">
-						<input type="number" placeholder="Max" aria-label="Maximum price" class="w-full px-3 py-2 border border-gray-200 rounded text-sm">
-					</div>
-				</div>
-				
-				<!-- Size -->
-				<div>
-					<label for="size-select" class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-					<select id="size-select" class="w-full px-3 py-2 border border-gray-200 rounded text-sm">
-						<option>All Sizes</option>
-						<option>XS</option>
-						<option>S</option>
-						<option>M</option>
-						<option>L</option>
-						<option>XL</option>
-					</select>
-				</div>
-				
-				<!-- Condition -->
-				<div>
-					<label for="condition-select" class="block text-sm font-medium text-gray-700 mb-2">Condition</label>
-					<select id="condition-select" class="w-full px-3 py-2 border border-gray-200 rounded text-sm">
-						<option>All Conditions</option>
-						<option>New with tags</option>
-						<option>Very good</option>
-						<option>Good</option>
-						<option>Fair</option>
-					</select>
-				</div>
-				
-				<!-- Brand -->
-				<div>
-					<label for="brand-input" class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-					<input id="brand-input" type="text" placeholder="Search brands..." class="w-full px-3 py-2 border border-gray-200 rounded text-sm">
-				</div>
-			</div>
+	{#if title}
+		<div class="flex items-center justify-between mb-4">
+			<h2 class="text-xl md:text-2xl font-bold text-gray-900">{title}</h2>
 			
-			<div class="flex justify-end gap-2 mt-4">
-				<Button variant="outline" onclick={() => showFilterPanel = false}>
-					Clear All
+			<!-- View Mode Toggle - Desktop Only -->
+			<div class="hidden md:flex border border-gray-200 rounded-lg p-1">
+				<Button
+					variant={viewMode === 'grid' ? 'default' : 'ghost'}
+					size="icon"
+					class="w-8 h-8"
+					onclick={() => viewMode = 'grid'}
+				>
+					<Grid class="w-4 h-4" />
 				</Button>
-				<Button onclick={() => showFilterPanel = false}>
-					Apply Filters
+				<Button
+					variant={viewMode === 'list' ? 'default' : 'ghost'}
+					size="icon"
+					class="w-8 h-8"
+					onclick={() => viewMode = 'list'}
+				>
+					<List class="w-4 h-4" />
 				</Button>
 			</div>
 		</div>
 	{/if}
 	
+	<!-- Filters Bar - Only show if explicitly enabled -->
+	{#if showFilters || showSorting}
+		<div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+			<!-- Condition Filter -->
+			{#if showFilters}
+				<Select bind:value={selectedCondition}>
+					<SelectTrigger class="min-w-[120px] h-9 text-sm {selectedCondition ? 'border-primary' : ''}">
+						{conditions.find(c => c.value === selectedCondition)?.label || 'Състояние'}
+					</SelectTrigger>
+					<SelectContent>
+						{#each conditions as condition}
+							<SelectItem value={condition.value}>{condition.label}</SelectItem>
+						{/each}
+					</SelectContent>
+				</Select>
+				
+				<!-- Size Filter -->
+				<Select bind:value={selectedSize}>
+					<SelectTrigger class="min-w-[90px] h-9 text-sm {selectedSize ? 'border-primary' : ''}">
+						{sizes.find(s => s.value === selectedSize)?.label || 'Размер'}
+					</SelectTrigger>
+					<SelectContent>
+						{#each sizes as size}
+							<SelectItem value={size.value}>{size.label}</SelectItem>
+						{/each}
+					</SelectContent>
+				</Select>
+				
+				<!-- Price Filter -->
+				<Select bind:value={selectedPrice}>
+					<SelectTrigger class="min-w-[100px] h-9 text-sm {selectedPrice ? 'border-primary' : ''}">
+						{priceRanges.find(p => p.value === selectedPrice)?.label || 'Цена'}
+					</SelectTrigger>
+					<SelectContent>
+						{#each priceRanges as range}
+							<SelectItem value={range.value}>{range.label}</SelectItem>
+						{/each}
+					</SelectContent>
+				</Select>
+				
+				<!-- Brand Filter -->
+				<Select bind:value={selectedBrand}>
+					<SelectTrigger class="min-w-[100px] h-9 text-sm {selectedBrand ? 'border-primary' : ''}">
+						{brands.find(b => b.value === selectedBrand)?.label || 'Марка'}
+					</SelectTrigger>
+					<SelectContent>
+						{#each brands as brand}
+							<SelectItem value={brand.value}>{brand.label}</SelectItem>
+						{/each}
+					</SelectContent>
+				</Select>
+				
+				<!-- Clear Filters -->
+				{#if activeFiltersCount > 0}
+					<Button 
+						variant="outline" 
+						size="sm"
+						onclick={clearAllFilters}
+						class="h-9 px-3 text-sm flex items-center gap-1"
+					>
+						<X class="w-3 h-3" />
+						Изчисти ({activeFiltersCount})
+					</Button>
+				{/if}
+			{/if}
+			
+			<!-- Sort Dropdown -->
+			{#if showSorting}
+				<div class="ml-auto">
+					<Select bind:value={sortBy}>
+						<SelectTrigger class="w-32 h-9 text-sm">
+							{sortOptions.find(opt => opt.value === sortBy)?.label || 'Сортирай'}
+						</SelectTrigger>
+						<SelectContent>
+							{#each sortOptions as option}
+								<SelectItem value={option.value}>{option.label}</SelectItem>
+							{/each}
+						</SelectContent>
+					</Select>
+				</div>
+			{/if}
+		</div>
+	{/if}
+	
 	<!-- Loading State -->
 	{#if loading}
-		<div class="grid {gridColsClass[gridCols]} gap-4">
+		<div class="grid {gridColsClass[gridCols]} gap-3 md:gap-4">
 			{#each Array(12) as _}
 				<div class="space-y-3">
 					<Skeleton class="aspect-[4/5] w-full" />
@@ -196,20 +321,22 @@
 				</div>
 			{/each}
 		</div>
-	{:else if products.length === 0}
+	{:else if filteredAndSortedProducts.length === 0}
 		<!-- Empty State -->
 		<div class="text-center py-12">
 			<div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
 				<Grid class="w-8 h-8 text-gray-400" />
 			</div>
-			<h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-			<p class="text-gray-500 mb-4">Try adjusting your filters or search terms</p>
-			<Button variant="outline">Browse All Categories</Button>
+			<h3 class="text-lg font-medium text-gray-900 mb-2">Няма намерени продукти</h3>
+			<p class="text-gray-500 mb-4">Опитайте да промените филтрите</p>
+			{#if activeFiltersCount > 0}
+				<Button variant="outline" onclick={clearAllFilters}>Изчисти филтрите</Button>
+			{/if}
 		</div>
 	{:else}
 		<!-- Product Grid -->
-		<div class="grid {gridColsClass[gridCols]} gap-4 md:gap-6">
-			{#each products as product (product.id)}
+		<div class="grid {gridColsClass[gridCols]} gap-3 md:gap-4">
+			{#each filteredAndSortedProducts as product (product.id)}
 				<ProductCard 
 					{product} 
 					onclick={() => handleProductClick(product)}
@@ -221,7 +348,7 @@
 		{#if products.length >= 20}
 			<div class="text-center mt-8">
 				<Button variant="outline" class="px-8">
-					Load More Products
+					Зареди още
 				</Button>
 			</div>
 		{/if}

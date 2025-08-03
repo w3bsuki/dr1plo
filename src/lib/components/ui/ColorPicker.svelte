@@ -64,13 +64,13 @@
 	}
 </script>
 
-<div class={cn("space-y-2", className)}>
+<fieldset class={cn("space-y-2", className)}>
 	{#if label}
-		<label class="block text-sm font-medium text-gray-700">
+		<legend class="block text-sm font-medium text-gray-700">
 			<span class="text-lg">🎨</span>
 			{label}
 			{#if required}<span class="text-red-500 ml-1">*</span>{/if}
-		</label>
+		</legend>
 	{/if}
 	
 	<div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -116,7 +116,7 @@
 			</button>
 		{/each}
 	</div>
-</div>
+</fieldset>
 
 <style>
 	@keyframes zoom-in-50 {

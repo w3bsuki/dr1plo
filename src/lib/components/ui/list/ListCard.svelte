@@ -17,22 +17,29 @@
 	}: Props = $props();
 </script>
 
+{#if onclick}
+<li role="presentation">
+	<button
+		type="button"
+		class={cn(
+			'w-full text-left rounded-md border border-gray-200 bg-white p-4',
+			hoverable && 'transition-colors hover:bg-gray-50',
+			'cursor-pointer',
+			className
+		)}
+		{onclick}
+	>
+		{@render children()}
+	</button>
+</li>
+{:else}
 <li
 	class={cn(
 		'rounded-md border border-gray-200 bg-white p-4',
 		hoverable && 'transition-colors hover:bg-gray-50',
-		onclick && 'cursor-pointer',
 		className
 	)}
-	{onclick}
-	role={onclick ? 'button' : undefined}
-	tabindex={onclick ? 0 : undefined}
-	onkeydown={(e) => {
-		if (onclick && (e.key === 'Enter' || e.key === ' ')) {
-			e.preventDefault();
-			onclick();
-		}
-	}}
 >
 	{@render children()}
 </li>
+{/if}

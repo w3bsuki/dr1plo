@@ -4,14 +4,26 @@
 	import { 
 		parseStorageUrl, 
 		generatePictureSources,
-		getTransformedImageUrl
+		getTransformedImageUrl,
+		getOptimizedImageUrl
 	} from '$lib/utils/supabase-images';
-	import { 
-		getOptimizedImageUrl, 
-		imageSizes,
-		type ImageTransformOptions 
-	} from '$lib/utils/supabase-images';
-	import { getResponsiveImageUrl } from '$lib/utils/responsive-image';
+
+	interface ImageTransformOptions {
+		width?: number;
+		height?: number;
+		resize?: 'cover' | 'contain' | 'fill';
+		quality?: number;
+		format?: 'origin' | 'webp' | 'avif';
+	}
+
+	const imageSizes = {
+		thumb: 150,
+		small: 300,
+		medium: 600,
+		large: 1200,
+		full: 1920,
+		card: 400
+	} as const;
 
 	interface Props {
 		// Source can be string, Supabase URL, or object with size variants
@@ -81,7 +93,7 @@
 	let isLoaded = $state(false);
 	let hasError = $state(false);
 	let isIntersecting = $state(priority || loading === 'eager');
-	let imgElement: HTMLImageElement | HTMLDivElement | null;
+	let imgElement = $state<HTMLImageElement | HTMLDivElement | null>(null);
 
 	// Determine if this is a Supabase storage URL
 	const isSupabaseUrl = $derived(() => {
@@ -96,15 +108,19 @@
 		
 		// Handle object with size variants
 		if (typeof src === 'object') {
-			return getResponsiveImageUrl(src, preferredSize);
+			// Simple fallback - pick the first available size or fallback to a default key
+			const keys = Object.keys(src);
+			if (keys.length > 0) {
+				return src[keys[0]] || src[Object.keys(src)[0]];
+			}
 		}
 		
 		// Handle Supabase URLs with optimization
-		if (isSupabaseUrl() && size) {
-			return getOptimizedImageUrl(src, size, customOptions);
+		if (isSupabaseUrl() && size && typeof src === 'string') {
+			return getOptimizedImageUrl(src, imageSizes[size], customOptions?.quality || 80);
 		}
 		
-		return src;
+		return typeof src === 'string' ? src : fallbackSrc;
 	});
 
 	// Parse storage info for Supabase images
@@ -117,10 +133,10 @@
 	const pictureSources = $derived(() => {
 		if (!storageInfo() || hasError || !isSupabaseUrl()) return [];
 		
-		return generatePictureSources(storageInfo()!.bucket, storageInfo()!.path, {
-			widths,
+		const baseUrl = `${storageInfo()!.bucket}/${storageInfo()!.path}`;
+		return generatePictureSources(baseUrl, {
 			formats,
-			quality
+			sizes: widths
 		});
 	});
 
@@ -152,15 +168,12 @@
 		if (storageInfo() && isSupabaseUrl()) {
 			return widths
 				.map(w => {
-					const url = getTransformedImageUrl(
-						storageInfo()!.bucket,
-						storageInfo()!.path,
-						{
-							width: w,
-							quality,
-							format: 'jpg'
-						}
-					);
+					const baseUrl = `${storageInfo()!.bucket}/${storageInfo()!.path}`;
+					const url = getTransformedImageUrl(baseUrl, {
+						width: w,
+						quality,
+						format: 'origin'
+					});
 					return `${url} ${w}w`;
 				})
 				.join(', ');
@@ -229,15 +242,12 @@
 			const link = document.createElement('link');
 			link.rel = 'preload';
 			link.as = 'image';
-			link.href = getTransformedImageUrl(
-				storageInfo()!.bucket,
-				storageInfo()!.path,
-				{
-					width: widths[widths.length - 1],
-					quality,
-					format: 'webp'
-				}
-			);
+			const baseUrl = `${storageInfo()!.bucket}/${storageInfo()!.path}`;
+			link.href = getTransformedImageUrl(baseUrl, {
+				width: widths[widths.length - 1],
+				quality,
+				format: 'webp'
+			});
 			link.type = 'image/webp';
 			document.head.appendChild(link);
 			
@@ -263,17 +273,99 @@
 	{/if}
 	
 	{#if isIntersecting}
-		{#if pictureSources().length > 0 && isSupabaseUrl()}
-			<!-- Modern format support with picture element -->
-			<picture>
-				{#each pictureSources() as source}
-					<source 
-						type={source?.type} 
-						srcset={source?.srcset}
+		{#if onclick}
+			<button type="button" {onclick} class="w-full h-full" aria-label={alt || 'Image'}>
+				{#if pictureSources().length > 0 && isSupabaseUrl()}
+					<!-- Modern format support with picture element -->
+					<picture>
+						{#each pictureSources() as source}
+							<source 
+								type={source?.type} 
+								srcset={source?.srcset}
+								{sizes}
+							/>
+						{/each}
+						
+						<img
+							bind:this={imgElement}
+							src={imageUrl()}
+							srcset={srcSet()}
+							{alt}
+							{sizes}
+							{width}
+							{height}
+							loading={computedLoading}
+							fetchpriority={computedFetchPriority}
+							decoding={computedDecoding}
+							class={cn(
+								'w-full h-full transition-opacity duration-[var(--transition-duration-300)]',
+								!isLoaded && 'opacity-0',
+								isLoaded && 'opacity-100'
+							)}
+							style:object-fit={objectFit}
+							onload={handleLoad}
+							onerror={handleError}
+						/>
+					</picture>
+				{:else}
+					<!-- Standard img for non-Supabase images -->
+					<img
+						bind:this={imgElement}
+						src={imageUrl()}
+						srcset={srcSet()}
+						{alt}
 						{sizes}
+						{width}
+						{height}
+						loading={computedLoading}
+						fetchpriority={computedFetchPriority}
+						decoding={computedDecoding}
+						class={cn(
+							'w-full h-full transition-opacity duration-[var(--transition-duration-300)]',
+							!isLoaded && 'opacity-0',
+							isLoaded && 'opacity-100'
+						)}
+						style:object-fit={objectFit}
+						onload={handleLoad}
+						onerror={handleError}
 					/>
-				{/each}
-				
+				{/if}
+			</button>
+		{:else}
+			{#if pictureSources().length > 0 && isSupabaseUrl()}
+				<!-- Modern format support with picture element -->
+				<picture>
+					{#each pictureSources() as source}
+						<source 
+							type={source?.type} 
+							srcset={source?.srcset}
+							{sizes}
+						/>
+					{/each}
+					
+					<img
+						bind:this={imgElement}
+						src={imageUrl()}
+						srcset={srcSet()}
+						{alt}
+						{sizes}
+						{width}
+						{height}
+						loading={computedLoading}
+						fetchpriority={computedFetchPriority}
+						decoding={computedDecoding}
+						class={cn(
+							'w-full h-full transition-opacity duration-[var(--transition-duration-300)]',
+							!isLoaded && 'opacity-0',
+							isLoaded && 'opacity-100'
+						)}
+						style:object-fit={objectFit}
+						onload={handleLoad}
+						onerror={handleError}
+					/>
+				</picture>
+			{:else}
+				<!-- Standard img for non-Supabase images -->
 				<img
 					bind:this={imgElement}
 					src={imageUrl()}
@@ -293,32 +385,8 @@
 					style:object-fit={objectFit}
 					onload={handleLoad}
 					onerror={handleError}
-					{onclick}
 				/>
-			</picture>
-		{:else}
-			<!-- Standard img for non-Supabase images -->
-			<img
-				bind:this={imgElement}
-				src={imageUrl()}
-				srcset={srcSet()}
-				{alt}
-				{sizes}
-				{width}
-				{height}
-				loading={computedLoading}
-				fetchpriority={computedFetchPriority}
-				decoding={computedDecoding}
-				class={cn(
-					'w-full h-full transition-opacity duration-[var(--transition-duration-300)]',
-					!isLoaded && 'opacity-0',
-					isLoaded && 'opacity-100'
-				)}
-				style:object-fit={objectFit}
-				onload={handleLoad}
-				onerror={handleError}
-				{onclick}
-			/>
+			{/if}
 		{/if}
 	{:else}
 		<!-- Placeholder while loading -->

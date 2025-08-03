@@ -24,7 +24,19 @@
 </script>
 
 {#if asChild}
-	<div onclick={handleClick}>
+	<div 
+		onclick={handleClick}
+		onkeydown={(e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				handleClick();
+			}
+		}}
+		role="button"
+		tabindex="0"
+		aria-expanded={$isOpen}
+		aria-haspopup="true"
+	>
 		{@render children()}
 	</div>
 {:else}

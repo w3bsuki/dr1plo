@@ -16,7 +16,7 @@
 		value = $bindable(),
 		onValueChange,
 		disabled = false,
-		open = $bindable(),
+		open = $bindable(false),
 		onOpenChange,
 		...restProps
 	}: Props = $props();

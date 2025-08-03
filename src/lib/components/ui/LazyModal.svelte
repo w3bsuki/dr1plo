@@ -17,7 +17,7 @@
 		[key: string]: any;
 	} = $props();
 	
-	let Component: ComponentType<SvelteComponent> | null = null;
+	let Component = $state<ComponentType<SvelteComponent> | null>(null);
 	let loading = $state(false);
 	let error = $state<Error | null>(null);
 	

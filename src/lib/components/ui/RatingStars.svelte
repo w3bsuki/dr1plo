@@ -39,6 +39,7 @@
 			class="text-yellow-400 {sizeClasses[size]} {readonly ? 'cursor-default' : 'cursor-pointer'} hover:scale-110 transition-transform"
 			onclick={() => handleStarClick(starValue)}
 			disabled={readonly}
+			aria-label="{readonly ? 'Rating' : 'Rate'} {starValue} star{starValue !== 1 ? 's' : ''}"
 		>
 			<svg
 				fill={isFilled ? 'currentColor' : 'none'}

@@ -22,12 +22,12 @@
 		lg: 'h-16 w-16 text-lg'
 	}
 	const gradients = [
-		'from-blue-500 to-purple-500',
+		'from-blue-500 to-blue-600',
 		'from-green-500 to-blue-500',
-		'from-purple-500 to-pink-500',
-		'from-yellow-500 to-red-300',
-		'from-pink-500 to-red-500',
-		'from-blue-300 to-red-500'
+		'from-blue-600 to-blue-700',
+		'from-yellow-500 to-orange-500',
+		'from-red-500 to-red-600',
+		'from-blue-400 to-blue-600'
 	];
 	
 	const gradient = $derived(() => {

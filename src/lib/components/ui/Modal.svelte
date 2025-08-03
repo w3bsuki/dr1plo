@@ -100,7 +100,7 @@
 	}: Props = $props();
 	
 	// Lazy loading state
-	let Component: ComponentType<SvelteComponent> | null = null;
+	let Component = $state<ComponentType<SvelteComponent> | null>(null);
 	let loading = $state(false);
 	let error = $state<Error | null>(null);
 	
@@ -258,6 +258,7 @@
 				class={contentClasses()}
 				transition:scale={{ duration: animationDuration }}
 				onclick={(e) => e.stopPropagation()}
+				role="presentation"
 			>
 				{#if lazy}
 					<!-- Lazy loading content -->

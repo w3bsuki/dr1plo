@@ -27,7 +27,7 @@
 
 	const { isOpen, setOpen } = context;
 
-	let contentEl: HTMLDivElement | null;
+	let contentEl = $state<HTMLDivElement | null>(null);
 
 	function handleClickOutside(e: MouseEvent) {
 		if (contentEl && !contentEl.contains(e.target as Node)) {

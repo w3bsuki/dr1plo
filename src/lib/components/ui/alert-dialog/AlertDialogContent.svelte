@@ -20,7 +20,7 @@
 
 	const { isOpen, setOpen } = context;
 
-	let dialogEl: HTMLDivElement | null;
+	let dialogEl = $state<HTMLDivElement | null>(null);
 
 	function handleBackdropClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) {

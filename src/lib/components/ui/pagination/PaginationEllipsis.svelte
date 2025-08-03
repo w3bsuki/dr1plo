@@ -10,7 +10,7 @@
 </script>
 
 <span
-	aria-hidden
+	aria-hidden="true"
 	class={cn('flex h-8 w-8 items-center justify-center', className)}
 >
 	<MoreHorizontal class="h-4 w-4 text-gray-400" />

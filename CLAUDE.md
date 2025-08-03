@@ -1,5 +1,5 @@
-# Driplo.bg - Development Instructions
-
+# Driplo.bg - Development Instructions    ***USE SVELTE 5 SYNTAX U FUCKING DOG, SVELTE KIT 2, TAILWINDCSS V4, SHADCN SVELTE, FUCK UR MOM IDIOT*** 
+ 
 ## 🔥 THE WORKFLOW (Start Here Every Time)
 ```bash
 # 1. Understand where we are

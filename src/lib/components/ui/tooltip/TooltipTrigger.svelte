@@ -24,6 +24,7 @@
 		onmouseleave={hide}
 		onfocus={show}
 		onblur={hide}
+		role="presentation"
 	>
 		{@render children()}
 	</div>

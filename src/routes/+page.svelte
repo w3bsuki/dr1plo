@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { Search, TrendingUp, Star, ArrowRight } from '@lucide/svelte';
+	import { Search } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/button.svelte';
 	import Badge from '$lib/components/ui/badge.svelte';
-	import { ProductGrid } from '$lib/components/marketplace';
+	import { ProductGrid, ProductCard } from '$lib/components/marketplace';
 	
+	let { data } = $props();
 	let searchQuery = $state('');
 	
-	// Mock data for demo
-	const categories = [
-		{ name: 'Men', slug: 'men', image: '/placeholder-men.jpg', count: '2.1k items' },
-		{ name: 'Women', slug: 'women', image: '/placeholder-women.jpg', count: '3.5k items' },
-		{ name: 'Kids', slug: 'kids', image: '/placeholder-kids.jpg', count: '0.8k items' }
-	];
+	// Real Supabase data is loaded via +page.server.ts with fallbacks to demo data
 	
-	// Enhanced product data for the new ProductGrid component
 	const featuredProducts = [
 		{
 			id: '1',
@@ -148,300 +144,76 @@
 		}
 	];
 	
-	const topSellers = [
-		{ username: 'streetwear_king', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', sales: 234 },
-		{ username: 'hypebeast_store', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', sales: 189 },
-		{ username: 'vintage_finds', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e4?w=100&h=100&fit=crop&crop=face', sales: 156 }
-	];
+	// Use server data if available, otherwise fallback to demo data
+	let products = data.featuredListings.length > 0 ? data.featuredListings : featuredProducts;
+	
+	// Individual sections with fallbacks
+	let newestProducts = data.newestListings?.length > 0 ? data.newestListings : products.slice(0, 8);
+	let premiumProducts = data.premiumListings?.length > 0 ? data.premiumListings : products.filter(p => p.price > 200).slice(0, 8);
+	let brandProducts = data.brandListings?.length > 0 ? data.brandListings : products.filter(p => ['Supreme', 'Nike', 'Fear of God', 'Balenciaga'].includes(p.brand)).slice(0, 8);
+	let topSellerProducts = data.topSellerListings?.length > 0 ? data.topSellerListings : products.filter(p => p.seller.rating >= 4.7).slice(0, 8);
+	
 </script>
 
-<!-- Hero Section - Desktop only -->
-<section class="hidden md:block relative overflow-hidden bg-gradient-brand min-h-[600px]">
-	<!-- Animated Background -->
-	<div class="absolute inset-0 gradient-mesh opacity-30 animate-pulse"></div>
-	<div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20"></div>
-	
-	<div class="container relative mx-auto max-w-7xl px-8 py-32">
-		<div class="text-center max-w-5xl mx-auto space-y-8 animate-fadeIn">
+<!-- Hero Section - Facebook Marketplace Style -->
+<section class="hidden md:block bg-white border-b">
+	<div class="container mx-auto max-w-7xl px-8 py-16">
+		<div class="text-center max-w-4xl mx-auto space-y-8">
 			<!-- Badge -->
-			<div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+			<div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100">
 				<span class="relative flex h-2 w-2">
-					<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-					<span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+					<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+					<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
 				</span>
-				<span class="text-sm font-medium text-white">Over 10,000 items added daily</span>
+				<span class="text-sm font-medium text-gray-700">Over 10,000 items added daily</span>
 			</div>
 			
 			<!-- Main Heading -->
-			<h1 class="text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-				The Future of
-				<span class="block mt-2 gradient-text">
-					Fashion Trading
+			<h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight">
+				Bulgaria's Trusted
+				<span class="block mt-2 text-primary">
+					Fashion Marketplace
 				</span>
 			</h1>
 			
 			<!-- Subtitle -->
-			<p class="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-				Join Bulgaria's premium marketplace for authentic streetwear, designer pieces, and curated vintage collections.
+			<p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+				Buy and sell authentic fashion with confidence. Verified sellers, secure payments, local delivery.
 			</p>
 			
-			<!-- Premium Search Bar -->
-			<div class="relative max-w-3xl mx-auto group">
-				<div class="absolute -inset-1 gradient-brand rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
-				<div class="relative flex items-center bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-					<Search class="absolute left-6 h-5 w-5 text-gray-500" />
+			<!-- Clean Search Bar -->
+			<div class="relative max-w-2xl mx-auto">
+				<div class="flex items-center bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+					<Search class="absolute left-4 h-5 w-5 text-gray-400" />
 					<input
 						type="text"
 						bind:value={searchQuery}
-						placeholder="Search brands, items, or styles..."
-						class="w-full px-14 py-5 text-lg bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none"
+						placeholder="Search for items, brands..."
+						class="w-full pl-12 pr-4 py-4 text-base bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
 					/>
-					<Button class="absolute right-3 gradient-brand text-white hover:shadow-brand transition-all duration-300 px-8 py-3 rounded-xl">
+					<Button class="bg-primary text-white hover:bg-primary/90 px-8 py-4 m-1 rounded-md">
 						Search
 					</Button>
 				</div>
 			</div>
 			
-			<!-- Quick Tags -->
-			<div class="flex flex-wrap justify-center gap-3">
-				<span class="text-white/60 text-sm">Trending:</span>
-				{#each ['Nike Air', 'Supreme', 'Vintage Denim', 'Balenciaga', 'Off-White'] as tag}
-					<button class="px-4 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-sm text-white border border-white/10 transition-all hover:scale-105">
-						{tag}
-					</button>
-				{/each}
-			</div>
-			
-			<!-- Stats -->
-			<div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8">
-				<div class="text-center">
-					<div class="text-3xl font-bold text-white">50K+</div>
-					<div class="text-sm text-white/70">Active Users</div>
-				</div>
-				<div class="text-center">
-					<div class="text-3xl font-bold text-white">100K+</div>
-					<div class="text-sm text-white/70">Listed Items</div>
-				</div>
-				<div class="text-center">
-					<div class="text-3xl font-bold text-white">98%</div>
-					<div class="text-sm text-white/70">Happy Customers</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</section>
-
-<!-- Mobile Hero & Product Grid -->
-<section class="md:hidden bg-gradient-to-br from-purple-600 to-pink-500">
-	<!-- Mobile Hero -->
-	<div class="px-4 pt-6 pb-8 text-white">
-		<div class="space-y-4">
-			<h1 class="text-3xl font-bold leading-tight text-white">
-				Fashion
-				<span class="block text-pink-200">Marketplace</span>
-			</h1>
-			<p class="text-white/90 text-sm">Bulgaria's premium fashion trading platform</p>
-			
-			<!-- Mobile Search -->
-			<div class="relative">
-				<Search class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-				<input
-					type="text"
-					bind:value={searchQuery}
-					placeholder="Search..."
-					class="w-full pl-11 pr-4 py-3 rounded-xl bg-white text-gray-900 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
-				/>
-			</div>
-		</div>
-	</div>
-</section>
-
-<!-- Mobile Product Grid -->
-<section class="md:hidden bg-white pt-4 pb-4">
-	<div class="px-4">
-		<div class="mb-4">
-			<h2 class="text-xl font-bold text-gray-900">Trending Now</h2>
-			<p class="text-sm text-gray-600">Discover the latest drops</p>
-		</div>
-		
-		<ProductGrid 
-			products={featuredProducts}
-			title=""
-			showFilters={false}
-			showSorting={false}
-			gridCols="2"
-		/>
-	</div>
-</section>
-
-<!-- Categories Section -->
-<section class="py-12 md:py-20 bg-gradient-to-b from-white to-gray-50">
-	<div class="container mx-auto max-w-7xl px-4 md:px-8">
-		<div class="text-center mb-8 md:mb-16 space-y-4">
-			<h2 class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Shop by Category</h2>
-			<p class="text-gray-600 max-w-2xl mx-auto">Explore our curated collections</p>
-		</div>
-		<div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-			{#each categories as category, i}
-				<a 
-					href="/{category.slug}" 
-					class="group relative overflow-hidden rounded-2xl aspect-[4/5] bg-gradient-to-br from-gray-200 to-gray-300 min-h-[200px] md:min-h-[280px] transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-slideUp"
-					style="animation-delay: {i * 100}ms"
-				>
-					<!-- Gradient Overlay -->
-					<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
-					
-					<!-- Content -->
-					<div class="absolute bottom-0 left-0 right-0 p-6 md:p-8 transform transition-transform group-hover:translate-y-[-4px]">
-						<h3 class="text-2xl md:text-3xl font-bold text-white mb-2">{category.name}</h3>
-						<p class="text-sm md:text-base text-white/80">{category.count}</p>
-						
-						<!-- Hover Arrow -->
-						<div class="mt-4 flex items-center gap-2 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-							<span class="text-sm font-medium">Explore</span>
-							<ArrowRight class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-						</div>
-					</div>
-					
-					<!-- Decorative Corner -->
-					<div class="absolute top-4 right-4 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500"></div>
-				</a>
-			{/each}
-		</div>
-	</div>
-</section>
-
-<!-- Featured Items - Desktop only (already shown on mobile above) -->
-<section class="hidden md:block py-16 bg-gray-50">
-	<div class="container mx-auto max-w-7xl px-4">
-		<ProductGrid 
-			products={featuredProducts}
-			title="Trending Now"
-			showFilters={false}
-			showSorting={false}
-			gridCols="auto"
-		/>
-	</div>
-</section>
-
-<!-- Top Sellers -->
-<section class="py-12 md:py-20 bg-white">
-	<div class="container mx-auto max-w-7xl px-4 md:px-8">
-		<div class="text-center mb-8 md:mb-16 space-y-4">
-			<h2 class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Top Sellers</h2>
-			<p class="text-gray-600 max-w-2xl mx-auto">Join our community of trusted fashion traders</p>
-		</div>
-		
-		<div class="grid grid-cols-3 md:grid-cols-3 gap-6 md:gap-12 max-w-5xl mx-auto">
-			{#each topSellers as seller, index}
-				<a 
-					href="/profile/{seller.username}" 
-					class="text-center group transform transition-all duration-300 hover:scale-110 animate-scaleIn"
-					style="animation-delay: {index * 150}ms"
-				>
-					<div class="relative mx-auto w-20 md:w-28 h-20 md:h-28 mb-4 md:mb-6">
-						<!-- Gradient Ring -->
-						<div class="absolute inset-0 gradient-brand rounded-full opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-300"></div>
-						
-						<!-- Avatar -->
-						<div class="relative w-full h-full rounded-full overflow-hidden border-4 border-white shadow-xl group-hover:shadow-2xl transition-shadow">
-							<img 
-								src={seller.avatar} 
-								alt={seller.username}
-								class="w-full h-full object-cover"
-							/>
-						</div>
-						
-						<!-- Badge -->
-						{#if index === 0}
-							<div class="absolute -top-2 -right-2 w-8 md:w-10 h-8 md:h-10 gradient-brand rounded-full flex items-center justify-center shadow-lg animate-bounce">
-								<Star class="h-4 md:h-5 w-4 md:w-5 text-white" />
-							</div>
-						{:else if index === 1}
-							<div class="absolute -top-2 -right-2 w-8 md:w-10 h-8 md:h-10 bg-gray-400 rounded-full flex items-center justify-center shadow-lg">
-								<span class="text-white font-bold text-sm">2</span>
-							</div>
-						{:else if index === 2}
-							<div class="absolute -top-2 -right-2 w-8 md:w-10 h-8 md:h-10 bg-orange-600 rounded-full flex items-center justify-center shadow-lg">
-								<span class="text-white font-bold text-sm">3</span>
-							</div>
-						{/if}
-					</div>
-					
-					<!-- Info -->
-					<h3 class="text-base md:text-lg font-bold text-gray-900 group-hover:gradient-text transition-all truncate mb-1">
-						@{seller.username}
-					</h3>
-					<p class="text-sm md:text-base text-gray-600">
-						<span class="font-semibold text-gray-900">{seller.sales}</span> sales
-					</p>
-					
-					<!-- Rating -->
-					<div class="flex justify-center gap-1 mt-2">
-						{#each Array(5) as _, i}
-							<Star class="h-3 md:h-4 w-3 md:w-4 fill-yellow-400 text-yellow-400" />
-						{/each}
-					</div>
-				</a>
-			{/each}
-		</div>
-	</div>
-</section>
-
-<!-- CTA Section -->
-<section class="relative py-20 md:py-32 overflow-hidden">
-	<!-- Gradient Background -->
-	<div class="absolute inset-0 gradient-brand"></div>
-	<div class="absolute inset-0 gradient-mesh opacity-20"></div>
-	
-	<!-- Content -->
-	<div class="container relative mx-auto max-w-7xl px-4 md:px-8 text-center">
-		<div class="max-w-4xl mx-auto space-y-8 animate-fadeIn">
-			<!-- Heading -->
-			<h2 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-				Ready to Start
-				<span class="block gradient-text">Your Fashion Journey?</span>
-			</h2>
-			
-			<!-- Description -->
-			<p class="text-lg md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-				Join thousands of fashion enthusiasts. List your first item in under 60 seconds.
-			</p>
-			
-			<!-- Buttons -->
-			<div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-				<Button 
-					size="lg" 
-					class="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-white/20 transform hover:scale-105 transition-all duration-300 min-h-[56px]"
-				>
-					Start Selling Now
-				</Button>
-				<Button 
-					variant="outline" 
-					size="lg" 
-					class="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg font-semibold rounded-xl transform hover:scale-105 transition-all duration-300 min-h-[56px]"
-				>
-					Browse Marketplace
-				</Button>
-			</div>
-			
-			<!-- Trust Badges -->
+			<!-- Trust Indicators -->
 			<div class="flex flex-wrap justify-center gap-8 pt-8">
-				<div class="flex items-center gap-2 text-white/80">
-					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+				<div class="flex items-center gap-2 text-gray-600">
+					<svg class="h-5 w-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 					</svg>
 					<span class="text-sm font-medium">Verified Sellers</span>
 				</div>
-				<div class="flex items-center gap-2 text-white/80">
-					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+				<div class="flex items-center gap-2 text-gray-600">
+					<svg class="h-5 w-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
 						<path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
 						<path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
 					</svg>
 					<span class="text-sm font-medium">Secure Payments</span>
 				</div>
-				<div class="flex items-center gap-2 text-white/80">
-					<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+				<div class="flex items-center gap-2 text-gray-600">
+					<svg class="h-5 w-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
 					</svg>
 					<span class="text-sm font-medium">24/7 Support</span>
@@ -450,4 +222,257 @@
 		</div>
 	</div>
 </section>
+
+<!-- Mobile Clean Layout -->
+<section class="md:hidden bg-white pt-4 pb-4">
+	<div class="space-y-6 pb-4">
+		<!-- Най-нови обяви -->
+		<section class="mx-4 space-y-3">
+			<div class="bg-gradient-to-r from-blue-600 to-cyan-600 border border-blue-700 rounded-xl p-4 shadow-lg">
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold text-white flex items-center gap-2">
+						<span class="text-lg">🆕</span>
+						Най-нови обяви
+					</h3>
+					<button onclick={() => goto('/browse?sort=newest')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
+						Виж всички →
+					</button>
+				</div>
+			</div>
+			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+				{#each newestProducts as product}
+					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<!-- Премиум обяви -->
+		<section class="mx-4 space-y-3">
+			<div class="bg-gradient-to-r from-amber-600 to-yellow-600 border border-amber-700 rounded-xl p-4 shadow-lg">
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold text-white flex items-center gap-2">
+						<span class="text-lg">✨</span>
+						Премиум обяви
+					</h3>
+					<button onclick={() => goto('/browse?type=premium')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
+						Виж всички →
+					</button>
+				</div>
+			</div>
+			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+				{#each premiumProducts as product}
+					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
+				{/each}
+				{#if premiumProducts.length === 0}
+					<div class="w-full text-center py-8 text-gray-500">
+						Няма премиум обяви в момента
+					</div>
+				{/if}
+			</div>
+		</section>
+
+
+		<!-- Обяви на брандове -->
+		<section class="mx-4 space-y-3">
+			<div class="bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-700 rounded-xl p-4 shadow-lg">
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold text-white flex items-center gap-2">
+						<span class="text-lg">🏢</span>
+						Обяви на брандове
+					</h3>
+					<button onclick={() => goto('/brands')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
+						Виж всички →
+					</button>
+				</div>
+			</div>
+			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+				{#each brandProducts as product}
+					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
+				{/each}
+				{#if brandProducts.length === 0}
+					<div class="w-full text-center py-8 text-gray-500">
+						Няма обяви от брандове в момента
+					</div>
+				{/if}
+			</div>
+		</section>
+
+		<!-- Топ продавачи -->
+		<section class="mx-4 space-y-3">
+			<div class="bg-gradient-to-r from-emerald-600 to-teal-600 border border-emerald-700 rounded-xl p-4 shadow-lg">
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold text-white flex items-center gap-2">
+						<span class="text-lg">⭐</span>
+						Топ продавачи
+					</h3>
+					<div class="flex items-center gap-2">
+						<div class="flex -space-x-2">
+							<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
+							<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
+							<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
+							<div class="w-6 h-6 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center">
+								<span class="text-xs font-medium text-emerald-600">1K+</span>
+							</div>
+						</div>
+						<button onclick={() => goto('/sellers')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors ml-2">
+							Виж всички →
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+				{#each topSellerProducts as product}
+					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
+				{/each}
+			</div>
+		</section>
+	</div>
+</section>
+
+
+<!-- Featured Items - Desktop only (already shown on mobile above) -->
+<section class="hidden md:block py-16 bg-gray-50">
+	<div class="container mx-auto max-w-7xl px-4">
+		<!-- Featured Collections -->
+		<div class="mb-12">
+			<h2 class="text-2xl font-bold text-gray-900 mb-6">Открий колекциите</h2>
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+				<button onclick={() => goto('/browse?category=premium')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
+					<img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop" alt="Premium" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+					<div class="absolute bottom-4 left-4 text-white">
+						<h3 class="font-semibold text-lg">Premium марки</h3>
+						<p class="text-sm opacity-90">Gucci, Prada, Versace</p>
+					</div>
+				</button>
+				
+				<button onclick={() => goto('/browse?category=streetwear')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
+					<img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&h=500&fit=crop" alt="Streetwear" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+					<div class="absolute bottom-4 left-4 text-white">
+						<h3 class="font-semibold text-lg">Streetwear</h3>
+						<p class="text-sm opacity-90">Supreme, Off-White</p>
+					</div>
+				</button>
+				
+				<button onclick={() => goto('/browse?category=vintage')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
+					<img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop" alt="Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+					<div class="absolute bottom-4 left-4 text-white">
+						<h3 class="font-semibold text-lg">Vintage находки</h3>
+						<p class="text-sm opacity-90">90s, Y2K стил</p>
+					</div>
+				</button>
+				
+				<button onclick={() => goto('/browse?category=sustainable')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
+					<img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=500&fit=crop" alt="Sustainable" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+					<div class="absolute bottom-4 left-4 text-white">
+						<h3 class="font-semibold text-lg">Устойчива мода</h3>
+						<p class="text-sm opacity-90">Еко материали</p>
+					</div>
+				</button>
+			</div>
+		</div>
+		
+		<!-- Horizontal Sections for Desktop -->
+		<div class="space-y-12">
+			<!-- Най-нови обяви -->
+			<section>
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">🆕 Най-нови обяви</h2>
+					<Button variant="ghost" onclick={() => goto('/browse?sort=newest')}>
+						Виж всички →
+					</Button>
+				</div>
+				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+					{#each newestProducts as product}
+						<div class="min-w-[200px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						</div>
+					{/each}
+				</div>
+			</section>
+
+			<!-- Премиум обяви -->
+			<section>
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">✨ Премиум обяви</h2>
+					<Button variant="ghost" onclick={() => goto('/browse?type=premium')}>
+						Виж всички →
+					</Button>
+				</div>
+				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+					{#each premiumProducts as product}
+						<div class="min-w-[200px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						</div>
+					{/each}
+				</div>
+			</section>
+
+			<!-- Обяви на брандове -->
+			<section>
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">🏢 Обяви на брандове</h2>
+					<Button variant="ghost" onclick={() => goto('/brands')}>
+						Виж всички →
+					</Button>
+				</div>
+				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+					{#each brandProducts as product}
+						<div class="min-w-[200px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						</div>
+					{/each}
+				</div>
+			</section>
+
+			<!-- Топ продавачи -->
+			<section>
+				<div class="flex items-center justify-between mb-4">
+					<h2 class="text-2xl font-bold text-gray-900">⭐ Топ продавачи</h2>
+					<Button variant="ghost" onclick={() => goto('/sellers')}>
+						Виж всички →
+					</Button>
+				</div>
+				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+					{#each topSellerProducts as product}
+						<div class="min-w-[200px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						</div>
+					{/each}
+				</div>
+			</section>
+		</div>
+		
+		<!-- Stats Banner -->
+		<div class="mt-16 bg-gray-900 rounded-2xl p-8 text-white">
+			<div class="grid grid-cols-3 gap-8 text-center">
+				<div>
+					<div class="text-3xl font-bold">50K+</div>
+					<div class="text-gray-400 text-sm mt-1">Активни потребители</div>
+				</div>
+				<div>
+					<div class="text-3xl font-bold">100K+</div>
+					<div class="text-gray-400 text-sm mt-1">Продукти</div>
+				</div>
+				<div>
+					<div class="text-3xl font-bold">4.8★</div>
+					<div class="text-gray-400 text-sm mt-1">Рейтинг</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
 

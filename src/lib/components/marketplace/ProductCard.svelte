@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Heart, Star, Eye, ShoppingBag, Shield } from '@lucide/svelte';
+	import { Heart, Star, Eye, ShoppingBag, MapPin } from '@lucide/svelte';
 	import Button from '$lib/components/ui/button.svelte';
 	import Badge from '$lib/components/ui/badge.svelte';
+	import LazyAvatar from '$lib/components/ui/avatar/LazyAvatar.svelte';
 	
 	interface Product {
 		id: string;
@@ -12,19 +13,16 @@
 		condition: string;
 		size: string;
 		images: string[];
-		rating: number;
-		reviewCount: number;
 		isFavorite: boolean;
-		isNew: boolean;
 		location?: string;
 		timeAgo?: string;
+		view_count?: number;
+		like_count?: number;
 		seller: {
 			name: string;
-			avatar: string;
+			avatar?: string;
 			rating: number;
 			verified?: boolean;
-			responseTime?: string;
-			isOnline?: boolean;
 		};
 	}
 	
@@ -32,7 +30,6 @@
 	let isLiked = $state(product.isFavorite);
 	let currentImageIndex = $state(0);
 	let isHovered = $state(false);
-	let imageLoaded = $state(false);
 	
 	function toggleLike(e: Event) {
 		e.stopPropagation();
@@ -41,23 +38,27 @@
 	
 	function handleQuickView(e: Event) {
 		e.stopPropagation();
-		// Quick view logic here
 		console.log('Quick view:', product.id);
-	}
-	
-	function handleAddToCart(e: Event) {
-		e.stopPropagation();
-		// Add to cart logic here
-		console.log('Add to cart:', product.id);
 	}
 	
 	const discountPercent = product.originalPrice 
 		? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
 		: 0;
+	
+	// Condition translations
+	const conditionMap = {
+		'new_with_tags': { label: 'Ново с етикет', color: 'bg-green-500' },
+		'new_without_tags': { label: 'Ново', color: 'bg-emerald-500' },
+		'very_good': { label: 'Много добро', color: 'bg-blue-500' },
+		'good': { label: 'Добро', color: 'bg-sky-500' },
+		'fair': { label: 'Задоволително', color: 'bg-gray-500' }
+	};
+	
+	const conditionInfo = conditionMap[product.condition as keyof typeof conditionMap] || conditionMap.good;
 </script>
 
 <div 
-	class="group relative bg-white rounded-lg border border-gray-200 cursor-pointer overflow-hidden w-full contain-layout"
+	class="group relative bg-white rounded-xl border border-gray-100 cursor-pointer overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300"
 	onclick={onclick}
 	role="button"
 	tabindex="0"
@@ -70,164 +71,164 @@
 		}
 	}}
 >
-	<!-- Image Container with 3D Effect -->
-	<div class="relative aspect-[4/3] overflow-hidden bg-gray-50">
-		<!-- Skeleton loader -->
-		{#if !imageLoaded}
-			<div class="absolute inset-0 skeleton-card"></div>
-		{/if}
-		
+	<!-- Image Container -->
+	<div class="relative aspect-[3/4] overflow-hidden bg-gray-50">
 		<!-- Main Image -->
 		<img 
 			src={product.images[currentImageIndex]} 
 			alt={product.title}
-			class="w-full h-full object-cover"
-			onload={() => imageLoaded = true}
+			class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+			loading="lazy"
 		/>
 		
-		<!-- Gradient Overlay -->
-		<div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+		<!-- Condition Badge - Top Left -->
+		<div class="absolute top-3 left-3">
+			<div class={`${conditionInfo.color} text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg`}>
+				{conditionInfo.label}
+			</div>
+		</div>
 		
-		<!-- Image Navigation -->
-		{#if product.images.length > 1 && isHovered}
-			<div class="absolute inset-x-0 bottom-4 flex justify-center gap-1.5 animate-slideUp">
-				{#each product.images as img, index}
+		<!-- Discount Badge - Below Condition -->
+		{#if discountPercent > 0}
+			<div class="absolute top-10 left-3">
+				<div class="bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg">
+					-{discountPercent}%
+				</div>
+			</div>
+		{/if}
+		
+		<!-- Like Button - Top Right -->
+		<button
+			onclick={toggleLike}
+			class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all shadow-sm"
+			aria-label="Добави в любими"
+		>
+			<Heart class="w-4 h-4 {isLiked ? 'fill-red-500 text-red-500' : 'text-gray-600'}" />
+		</button>
+		
+		<!-- Quick View on Hover -->
+		{#if isHovered}
+			<button
+				onclick={handleQuickView}
+				class="absolute top-12 right-3 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center transition-all shadow-sm animate-in fade-in duration-200"
+				aria-label="Бърз преглед"
+			>
+				<Eye class="w-4 h-4 text-gray-600" />
+			</button>
+		{/if}
+		
+		<!-- Image Dots -->
+		{#if product.images.length > 1}
+			<div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+				{#each product.images.slice(0, 5) as _, index}
 					<button
 						onclick={(e) => { 
 							e.stopPropagation(); 
 							currentImageIndex = index;
 						}}
-						class="group/dot relative"
-						aria-label="View image {index + 1}"
-					>
-						<div class="w-8 h-8 rounded-lg overflow-hidden border-2 {index === currentImageIndex ? 'border-white shadow-lg' : 'border-white/50'} transition-all hover:scale-110">
-							<img src={img} alt="" class="w-full h-full object-cover" />
-						</div>
-					</button>
+						class="w-1.5 h-1.5 rounded-full transition-all {index === currentImageIndex ? 'bg-white w-3' : 'bg-white/60'}"
+						aria-label="Снимка {index + 1}"
+					></button>
 				{/each}
 			</div>
 		{/if}
-		
-		<!-- Premium Badges -->
-		<div class="absolute top-3 left-3 flex flex-col gap-2">
-			{#if product.isNew}
-				<Badge class="bg-green-500 text-white text-xs px-2 py-1">
-					NEW
-				</Badge>
-			{/if}
-			{#if discountPercent > 0}
-				<Badge class="bg-red-500 text-white text-xs px-2 py-1">
-					-{discountPercent}%
-				</Badge>
-			{/if}
-		</div>
-		
-		<!-- Action Buttons -->
-		<div class="absolute top-3 right-3 flex flex-col gap-2">
-			<!-- Like Button -->
-			<button
-				onclick={toggleLike}
-				class="w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center transition-colors shadow-md"
-				aria-label="Add to favorites"
-			>
-				<Heart class="w-4 h-4 {isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700'}" />
-			</button>
-			
-			<!-- Quick View Button (appears on hover) -->
-			{#if isHovered}
-				<button
-					onclick={handleQuickView}
-					class="w-10 h-10 rounded-full glass backdrop-blur-md bg-white/90 hover:bg-white flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 animate-slideLeft"
-					aria-label="Quick view"
-				>
-					<Eye class="w-5 h-5 text-gray-700" />
-				</button>
-			{/if}
-		</div>
-		
-		<!-- Desktop Hover Actions Bar -->
-		<div class="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center">
-			<Button onclick={handleQuickView} class="bg-white text-black hover:bg-gray-100">
-				Quick View
-			</Button>
-		</div>
 	</div>
 	
-	<!-- Product Info with Enhanced Typography -->
+	<!-- Product Info -->
 	<div class="p-3 space-y-2">
 		<!-- Brand & Title -->
 		<div>
-			<p class="text-xs font-medium uppercase tracking-wide text-gray-500">{product.brand}</p>
-			<h3 class="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
+			<p class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-0.5">
+				{product.brand}
+			</p>
+			<h3 class="text-sm font-medium text-gray-900 line-clamp-1 hover:text-primary transition-colors">
 				{product.title}
 			</h3>
 		</div>
 		
-		<!-- Tags with Glass Effect -->
-		<div class="flex flex-wrap gap-2">
-			<Badge variant="outline" class="text-xs px-2 py-1 bg-gray-50 border-gray-200">
-				Size {product.size}
-			</Badge>
-			<Badge variant="outline" class="text-xs px-2 py-1 bg-gray-50 border-gray-200">
-				{product.condition}
-			</Badge>
+		<!-- Size & Location -->
+		<div class="flex items-center gap-3 text-[11px] text-gray-500">
+			<span class="font-medium">Размер {product.size}</span>
+			{#if product.location}
+				<div class="flex items-center gap-0.5">
+					<MapPin class="w-3 h-3" />
+					<span>{product.location}</span>
+				</div>
+			{/if}
 		</div>
 		
 		<!-- Price -->
-		<div class="flex items-center gap-2">
+		<div class="flex items-baseline gap-2">
 			<span class="text-lg font-bold text-gray-900">
-				€{product.price}
+				{product.price} лв
 			</span>
 			{#if product.originalPrice}
-				<span class="text-sm text-gray-500 line-through">
-					€{product.originalPrice}
+				<span class="text-xs text-gray-400 line-through">
+					{product.originalPrice} лв
 				</span>
 			{/if}
 		</div>
 		
-		<!-- Seller Info with Premium Badge -->
-		<div class="flex items-center justify-between pt-3 border-t border-gray-100">
-			<div class="flex items-center gap-2 group/seller">
-				<div class="relative">
-					<img 
-						src={product.seller.avatar} 
-						alt={product.seller.name}
-						class="w-7 h-7 rounded-full object-cover border-2 border-white shadow-md group-hover/seller:scale-110 transition-transform"
-					/>
-					{#if product.seller.rating >= 4.8}
-						<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white"></div>
-					{/if}
-				</div>
-				<span class="text-xs font-medium text-gray-700 group-hover/seller:text-primary transition-colors">
+		<!-- Seller Info - Clean & Simple -->
+		<div class="flex items-center gap-2 pt-2 border-t border-gray-100">
+			<LazyAvatar 
+				src={product.seller.avatar} 
+				username={product.seller.name}
+				size="xs"
+				eager={false}
+			/>
+			<div class="flex-1 min-w-0">
+				<p class="text-xs font-medium text-gray-700 truncate">
 					{product.seller.name}
-				</span>
+				</p>
 			</div>
-			
-			<!-- Rating with Stars -->
-			<div class="flex items-center gap-1.5">
-				<div class="flex gap-0.5">
-					{#each Array(5) as _, i}
-						<Star class="w-3 h-3 {i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}" />
-					{/each}
-				</div>
-				<span class="text-xs font-medium text-gray-600">
-					{product.rating}
-				</span>
-				<span class="text-xs text-gray-400">
-					({product.reviewCount})
+			<div class="flex items-center gap-0.5">
+				<Star class="w-3 h-3 fill-yellow-400 text-yellow-400" />
+				<span class="text-[11px] font-medium text-gray-600">
+					{product.seller.rating}
 				</span>
 			</div>
 		</div>
+		
+		<!-- Stats Row -->
+		{#if product.view_count !== undefined || product.like_count !== undefined}
+			<div class="flex items-center gap-3 text-[11px] text-gray-400 pt-2">
+				{#if product.view_count !== undefined}
+					<div class="flex items-center gap-1">
+						<Eye class="w-3 h-3" />
+						<span>{product.view_count} прегледа</span>
+					</div>
+				{/if}
+				{#if product.like_count !== undefined}
+					<div class="flex items-center gap-1">
+						<Heart class="w-3 h-3" />
+						<span>{product.like_count} харесвания</span>
+					</div>
+				{/if}
+			</div>
+		{/if}
+		
+		{#if product.timeAgo}
+			<p class="text-[10px] text-gray-400 text-center">
+				{product.timeAgo}
+			</p>
+		{/if}
 	</div>
 </div>
 
 <style>
-	.line-clamp-1 {
-		display: -webkit-box;
-		-webkit-line-clamp: 1;
-		line-clamp: 1;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(-4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 	
+	.animate-in {
+		animation: fade-in 0.2s ease-out;
+	}
 </style>
