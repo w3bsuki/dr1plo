@@ -223,42 +223,84 @@
 	</div>
 </section>
 
-<!-- Mobile Clean Layout -->
-<section class="md:hidden bg-white pt-20 pb-4">
-	<div class="space-y-6 pb-4">
-		<!-- Най-нови обяви -->
-		<section class="mx-4">
-			<div class="grid grid-cols-2 gap-2">
-				{#each newestProducts as product}
-					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+<!-- Mobile Clean Layout with Horizontal Scrolling -->
+<section class="md:hidden bg-gray-50 pt-20 pb-20">
+	<!-- Promotional Banner -->
+	<div class="px-4 mb-6">
+		<div class="relative bg-gradient-to-br from-primary to-accent rounded-xl p-4 text-white">
+			<div class="absolute top-2 right-2">
+				<Badge class="bg-yellow-400 text-black">-30%</Badge>
+			</div>
+			<h2 class="text-lg font-bold mb-1">Зимна разпродажба!</h2>
+			<p class="text-sm opacity-90 mb-3">Отстъпки до 30% на избрани артикули</p>
+			<Button size="sm" class="bg-white text-primary hover:bg-gray-100" onclick={() => goto('/browse?sale=true')}>
+				Разгледай
+			</Button>
+		</div>
+	</div>
+
+	<div class="space-y-6">
+		<!-- Products Grid -->
+		<section>
+			<div class="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
+				{#each newestProducts.slice(0, 6) as product}
+					<div class="w-[160px] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
 				{/each}
 			</div>
 		</section>
 
-		<!-- Премиум обяви -->
-		<section class="mx-4">
-			<div class="grid grid-cols-2 gap-2">
-				{#each premiumProducts as product}
-					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+		<!-- Flash Sale Banner -->
+		<div class="px-4">
+			<button onclick={() => goto('/browse?flash=true')} class="w-full relative overflow-hidden rounded-xl">
+				<img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=200&fit=crop" alt="Flash Sale" class="w-full h-32 object-cover" />
+				<div class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center px-4">
+					<div class="text-white text-left">
+						<p class="text-xs uppercase tracking-wide mb-1">⚡ Flash Sale</p>
+						<h3 class="text-lg font-bold">До -70% намаление</h3>
+						<p class="text-xs opacity-90">Само днес!</p>
+					</div>
+				</div>
+			</button>
+		</div>
+
+		<!-- Products Grid -->
+		<section>
+			<div class="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
+				{#each premiumProducts.slice(0, 6) as product}
+					<div class="w-[160px] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
 				{/each}
 			</div>
 		</section>
 
-
-		<!-- Обяви на брандове -->
-		<section class="mx-4">
-			<div class="grid grid-cols-2 gap-2">
-				{#each brandProducts as product}
-					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
-				{/each}
+		<!-- Brand Collections Banner -->
+		<div class="px-4">
+			<div class="grid grid-cols-2 gap-3">
+				<button onclick={() => goto('/browse?brand=nike')} class="relative rounded-lg overflow-hidden aspect-square">
+					<img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop" alt="Nike" class="w-full h-full object-cover" />
+					<div class="absolute inset-0 bg-black/40 flex items-end p-3">
+						<span class="text-white font-bold">Nike</span>
+					</div>
+				</button>
+				<button onclick={() => goto('/browse?brand=adidas')} class="relative rounded-lg overflow-hidden aspect-square">
+					<img src="https://images.unsplash.com/photo-1520256862855-398228c41684?w=400&h=400&fit=crop" alt="Adidas" class="w-full h-full object-cover" />
+					<div class="absolute inset-0 bg-black/40 flex items-end p-3">
+						<span class="text-white font-bold">Adidas</span>
+					</div>
+				</button>
 			</div>
-		</section>
+		</div>
 
-		<!-- Топ продавачи -->
-		<section class="mx-4">
-			<div class="grid grid-cols-2 gap-2">
-				{#each topSellerProducts as product}
-					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+		<!-- Products Grid -->
+		<section>
+			<div class="flex gap-3 px-4 overflow-x-auto scrollbar-hide">
+				{#each topSellerProducts.slice(0, 6) as product}
+					<div class="w-[160px] flex-shrink-0">
+						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+					</div>
 				{/each}
 			</div>
 		</section>
@@ -269,44 +311,29 @@
 <!-- Featured Items - Desktop only (already shown on mobile above) -->
 <section class="hidden md:block py-16 bg-gray-50">
 	<div class="container mx-auto max-w-7xl px-4">
-		<!-- Featured Collections -->
+		<!-- Categories Quick Access - Desktop Version -->
 		<div class="mb-12">
-			<h2 class="text-2xl font-bold text-gray-900 mb-6">Открий колекциите</h2>
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-				<button onclick={() => goto('/browse?category=premium')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
-					<img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=500&fit=crop" alt="Premium" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-					<div class="absolute bottom-4 left-4 text-white">
-						<h3 class="font-semibold text-lg">Premium марки</h3>
-						<p class="text-sm opacity-90">Gucci, Prada, Versace</p>
-					</div>
+			<h2 class="text-2xl font-bold text-gray-900 mb-6">Категории</h2>
+			<div class="flex justify-center gap-6">
+				<button onclick={() => goto('/browse?category=women')} class="flex flex-col items-center gap-3 p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+					<div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-2xl">👗</div>
+					<span class="font-medium">Дамски</span>
 				</button>
-				
-				<button onclick={() => goto('/browse?category=streetwear')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
-					<img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&h=500&fit=crop" alt="Streetwear" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-					<div class="absolute bottom-4 left-4 text-white">
-						<h3 class="font-semibold text-lg">Streetwear</h3>
-						<p class="text-sm opacity-90">Supreme, Off-White</p>
-					</div>
+				<button onclick={() => goto('/browse?category=men')} class="flex flex-col items-center gap-3 p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+					<div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">👔</div>
+					<span class="font-medium">Мъжки</span>
 				</button>
-				
-				<button onclick={() => goto('/browse?category=vintage')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
-					<img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=500&fit=crop" alt="Vintage" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-					<div class="absolute bottom-4 left-4 text-white">
-						<h3 class="font-semibold text-lg">Vintage находки</h3>
-						<p class="text-sm opacity-90">90s, Y2K стил</p>
-					</div>
+				<button onclick={() => goto('/browse?category=shoes')} class="flex flex-col items-center gap-3 p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+					<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-2xl">👟</div>
+					<span class="font-medium">Обувки</span>
 				</button>
-				
-				<button onclick={() => goto('/browse?category=sustainable')} class="group relative overflow-hidden rounded-xl aspect-[3/4]">
-					<img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&h=500&fit=crop" alt="Sustainable" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-					<div class="absolute bottom-4 left-4 text-white">
-						<h3 class="font-semibold text-lg">Устойчива мода</h3>
-						<p class="text-sm opacity-90">Еко материали</p>
-					</div>
+				<button onclick={() => goto('/browse?category=bags')} class="flex flex-col items-center gap-3 p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+					<div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-2xl">👜</div>
+					<span class="font-medium">Чанти</span>
+				</button>
+				<button onclick={() => goto('/browse?category=accessories')} class="flex flex-col items-center gap-3 p-4 bg-white rounded-xl hover:shadow-md transition-shadow">
+					<div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-2xl">💍</div>
+					<span class="font-medium">Аксесоари</span>
 				</button>
 			</div>
 		</div>
@@ -316,15 +343,15 @@
 			<!-- Най-нови обяви -->
 			<section>
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-2xl font-bold text-gray-900">🆕 Най-нови обяви</h2>
+					<h2 class="text-2xl font-bold text-gray-900">Най-нови обяви</h2>
 					<Button variant="ghost" onclick={() => goto('/browse?sort=newest')}>
 						Виж всички →
 					</Button>
 				</div>
 				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
 					{#each newestProducts as product}
-						<div class="min-w-[200px] flex-shrink-0">
-							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						<div class="min-w-[160px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} compact={true} />
 						</div>
 					{/each}
 				</div>
@@ -333,15 +360,15 @@
 			<!-- Премиум обяви -->
 			<section>
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-2xl font-bold text-gray-900">✨ Премиум обяви</h2>
+					<h2 class="text-2xl font-bold text-gray-900">Премиум обяви</h2>
 					<Button variant="ghost" onclick={() => goto('/browse?type=premium')}>
 						Виж всички →
 					</Button>
 				</div>
 				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
 					{#each premiumProducts as product}
-						<div class="min-w-[200px] flex-shrink-0">
-							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						<div class="min-w-[160px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} compact={true} />
 						</div>
 					{/each}
 				</div>
@@ -350,15 +377,15 @@
 			<!-- Обяви на брандове -->
 			<section>
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-2xl font-bold text-gray-900">🏢 Обяви на брандове</h2>
+					<h2 class="text-2xl font-bold text-gray-900">Обяви на брандове</h2>
 					<Button variant="ghost" onclick={() => goto('/brands')}>
 						Виж всички →
 					</Button>
 				</div>
 				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
 					{#each brandProducts as product}
-						<div class="min-w-[200px] flex-shrink-0">
-							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						<div class="min-w-[160px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} compact={true} />
 						</div>
 					{/each}
 				</div>
@@ -367,15 +394,15 @@
 			<!-- Топ продавачи -->
 			<section>
 				<div class="flex items-center justify-between mb-4">
-					<h2 class="text-2xl font-bold text-gray-900">⭐ Топ продавачи</h2>
+					<h2 class="text-2xl font-bold text-gray-900">Топ продавачи</h2>
 					<Button variant="ghost" onclick={() => goto('/sellers')}>
 						Виж всички →
 					</Button>
 				</div>
 				<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
 					{#each topSellerProducts as product}
-						<div class="min-w-[200px] flex-shrink-0">
-							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
+						<div class="min-w-[160px] flex-shrink-0">
+							<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} compact={true} />
 						</div>
 					{/each}
 				</div>

@@ -204,7 +204,7 @@
 </svelte:head>
 
 <!-- Mobile Layout -->
-<div class="md:hidden min-h-screen bg-gray-50 pb-20">
+<div class="md:hidden min-h-screen bg-white pb-20">
 	<!-- Breadcrumbs -->
 	<div class="bg-white px-3 py-2 border-b border-gray-100">
 		<div class="flex items-center gap-1 text-xs overflow-x-auto" style="scrollbar-width: none; -ms-overflow-style: none;">
@@ -226,12 +226,12 @@
 	</div>
 	<!-- Image Gallery -->
 	<div 
-		class="relative bg-white"
+		class="relative bg-gray-50 p-4"
 		ontouchstart={handleTouchStart}
 		ontouchend={handleTouchEnd}
 	>
 		<!-- Main Image -->
-		<div class="relative aspect-[4/5] overflow-hidden">
+		<div class="relative aspect-square max-w-md mx-auto rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm">
 			<button 
 				onclick={() => showImageModal = true}
 				class="w-full h-full block p-0 border-0"
@@ -287,14 +287,14 @@
 		</div>
 		
 		<!-- Thumbnail Strip -->
-		<div class="flex gap-1 p-2 overflow-x-auto">
+		<div class="flex gap-2 p-3 justify-center overflow-x-auto">
 			{#each product.images as image, index}
 				<button
 					onclick={() => currentImageIndex = index}
-					class="relative min-w-16 h-16 rounded-lg overflow-hidden border-2 transition-all {
+					class="relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all {
 						index === currentImageIndex 
-							? 'border-primary' 
-							: 'border-transparent'
+							? 'border-primary shadow-md scale-105' 
+							: 'border-gray-200'
 					}"
 				>
 					<img src={image} alt="" class="w-full h-full object-cover" />
@@ -500,7 +500,7 @@
 		<div class="col-span-7">
 			<div class="sticky top-24 space-y-4">
 				<!-- Main Image -->
-				<div class="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+				<div class="relative aspect-[3/4] max-h-[600px] rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
 					<button
 						onclick={() => showImageModal = true}
 						class="w-full h-full block p-0 border-0 cursor-zoom-in"
@@ -529,14 +529,14 @@
 				</div>
 				
 				<!-- Thumbnails -->
-				<div class="grid grid-cols-6 gap-2">
+				<div class="grid grid-cols-4 gap-3">
 					{#each product.images as image, index}
 						<button
 							onclick={() => currentImageIndex = index}
-							class="aspect-square rounded-lg overflow-hidden border-2 transition-all {
+							class="aspect-square rounded-lg overflow-hidden border-2 bg-white transition-all transform {
 								index === currentImageIndex 
-									? 'border-primary' 
-									: 'border-gray-200 hover:border-gray-400'
+									? 'border-primary shadow-lg scale-105' 
+									: 'border-gray-200 hover:border-gray-300 hover:shadow-md'
 							}"
 						>
 							<img src={image} alt="" class="w-full h-full object-cover" />
