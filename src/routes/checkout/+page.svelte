@@ -8,7 +8,6 @@
 	import Input from '$lib/components/ui/input.svelte';
 	import Label from '$lib/components/ui/label.svelte';
 	import Textarea from '$lib/components/ui/textarea.svelte';
-	import Checkbox from '$lib/components/ui/checkbox.svelte';
 	import Badge from '$lib/components/ui/badge.svelte';
 	
 	// Mock cart data - in production from store
@@ -222,7 +221,7 @@
 	<!-- Terms -->
 	<div class="bg-white px-4 py-4">
 		<label class="flex items-start gap-3 cursor-pointer">
-			<Checkbox bind:checked={acceptTerms} class="mt-0.5" />
+			<input type="checkbox" bind:checked={acceptTerms} class="mt-1 text-primary" />
 			<span class="text-sm">
 				Съгласен съм с <a href="/terms" class="text-primary underline">Общите условия</a> и 
 				<a href="/privacy" class="text-primary underline">Политиката за поверителност</a>
@@ -230,7 +229,7 @@
 		</label>
 		
 		<label class="flex items-start gap-3 cursor-pointer mt-3">
-			<Checkbox bind:checked={saveInfo} class="mt-0.5" />
+			<input type="checkbox" bind:checked={saveInfo} class="mt-1 text-primary" />
 			<span class="text-sm">Запази данните ми за следващи поръчки</span>
 		</label>
 	</div>
@@ -396,7 +395,7 @@
 			<div class="bg-white rounded-lg shadow-sm p-6">
 				<div class="space-y-4">
 					<label class="flex items-start gap-3 cursor-pointer">
-						<Checkbox bind:checked={acceptTerms} class="mt-1" />
+						<input type="checkbox" bind:checked={acceptTerms} class="mt-1 text-primary" />
 						<span class="text-sm">
 							Прочетох и приемам <a href="/terms" class="text-primary hover:underline">Общите условия</a> и 
 							<a href="/privacy" class="text-primary hover:underline">Политиката за поверителност</a> *
@@ -404,7 +403,7 @@
 					</label>
 					
 					<label class="flex items-start gap-3 cursor-pointer">
-						<Checkbox bind:checked={saveInfo} class="mt-1" />
+						<input type="checkbox" bind:checked={saveInfo} class="mt-1 text-primary" />
 						<span class="text-sm">
 							Запази информацията ми за бъдещи поръчки
 						</span>
