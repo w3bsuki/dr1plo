@@ -8,8 +8,6 @@
 	import Input from '$lib/components/ui/input.svelte';
 	import Label from '$lib/components/ui/label.svelte';
 	import Textarea from '$lib/components/ui/textarea.svelte';
-	import RadioGroup from '$lib/components/ui/radio-group.svelte';
-	import RadioGroupItem from '$lib/components/ui/radio-group-item.svelte';
 	import Checkbox from '$lib/components/ui/checkbox.svelte';
 	import Badge from '$lib/components/ui/badge.svelte';
 	
@@ -122,10 +120,10 @@
 	<!-- Delivery Method -->
 	<div class="bg-white px-4 py-4 mb-2">
 		<h2 class="font-semibold mb-3">Начин на доставка</h2>
-		<RadioGroup bind:value={deliveryMethod}>
-			<label class="flex items-center justify-between p-3 border rounded-lg mb-2 cursor-pointer">
+		<div class="space-y-2">
+			<label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {deliveryMethod === 'shipping' ? 'border-primary bg-primary/5' : ''}">
 				<div class="flex items-center gap-3">
-					<RadioGroupItem value="shipping" />
+					<input type="radio" bind:group={deliveryMethod} value="shipping" class="text-primary" />
 					<div>
 						<p class="font-medium">Доставка до адрес</p>
 						<p class="text-xs text-gray-500">2-5 работни дни</p>
@@ -134,9 +132,9 @@
 				<span class="text-sm font-medium">5 лв</span>
 			</label>
 			
-			<label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer">
+			<label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {deliveryMethod === 'pickup' ? 'border-primary bg-primary/5' : ''}">
 				<div class="flex items-center gap-3">
-					<RadioGroupItem value="pickup" />
+					<input type="radio" bind:group={deliveryMethod} value="pickup" class="text-primary" />
 					<div>
 						<p class="font-medium">Вземане от офис</p>
 						<p class="text-xs text-gray-500">София, бул. Витоша 10</p>
@@ -144,7 +142,7 @@
 				</div>
 				<span class="text-sm font-medium text-green-600">Безплатно</span>
 			</label>
-		</RadioGroup>
+		</div>
 	</div>
 	
 	<!-- Shipping Info -->
@@ -194,25 +192,25 @@
 	<!-- Payment Method -->
 	<div class="bg-white px-4 py-4 mb-2">
 		<h2 class="font-semibold mb-3">Начин на плащане</h2>
-		<RadioGroup bind:value={paymentMethod}>
-			<label class="flex items-center gap-3 p-3 border rounded-lg mb-2 cursor-pointer">
-				<RadioGroupItem value="card" />
+		<div class="space-y-2">
+			<label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'card' ? 'border-primary bg-primary/5' : ''}">
+				<input type="radio" bind:group={paymentMethod} value="card" class="text-primary" />
 				<CreditCard class="w-5 h-5" />
 				<span class="font-medium">Карта</span>
 			</label>
 			
-			<label class="flex items-center gap-3 p-3 border rounded-lg mb-2 cursor-pointer">
-				<RadioGroupItem value="paypal" />
+			<label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : ''}">
+				<input type="radio" bind:group={paymentMethod} value="paypal" class="text-primary" />
 				<Wallet class="w-5 h-5" />
 				<span class="font-medium">PayPal</span>
 			</label>
 			
-			<label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer">
-				<RadioGroupItem value="cash" />
+			<label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'cash' ? 'border-primary bg-primary/5' : ''}">
+				<input type="radio" bind:group={paymentMethod} value="cash" class="text-primary" />
 				<Building class="w-5 h-5" />
 				<span class="font-medium">В брой при доставка</span>
 			</label>
-		</RadioGroup>
+		</div>
 		
 		{#if paymentMethod === 'card'}
 			<div class="mt-4 p-3 bg-blue-50 rounded-lg">
@@ -272,33 +270,31 @@
 			<!-- Delivery Method -->
 			<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
 				<h2 class="text-xl font-semibold mb-4">Начин на доставка</h2>
-				<RadioGroup bind:value={deliveryMethod}>
-					<div class="space-y-3">
-						<label class="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-							<div class="flex items-center gap-4">
-								<RadioGroupItem value="shipping" />
-								<Package class="w-6 h-6 text-gray-600" />
-								<div>
-									<p class="font-medium">Доставка до адрес</p>
-									<p class="text-sm text-gray-500">Стандартна доставка (2-5 работни дни)</p>
-								</div>
+				<div class="space-y-3">
+					<label class="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {deliveryMethod === 'shipping' ? 'border-primary bg-primary/5' : ''}">
+						<div class="flex items-center gap-4">
+							<input type="radio" bind:group={deliveryMethod} value="shipping" class="text-primary" />
+							<Package class="w-6 h-6 text-gray-600" />
+							<div>
+								<p class="font-medium">Доставка до адрес</p>
+								<p class="text-sm text-gray-500">Стандартна доставка (2-5 работни дни)</p>
 							</div>
-							<span class="font-medium">5 лв</span>
-						</label>
-						
-						<label class="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-							<div class="flex items-center gap-4">
-								<RadioGroupItem value="pickup" />
-								<MapPin class="w-6 h-6 text-gray-600" />
-								<div>
-									<p class="font-medium">Вземане от офис</p>
-									<p class="text-sm text-gray-500">София, бул. Витоша 10</p>
-								</div>
+						</div>
+						<span class="font-medium">5 лв</span>
+					</label>
+					
+					<label class="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {deliveryMethod === 'pickup' ? 'border-primary bg-primary/5' : ''}">
+						<div class="flex items-center gap-4">
+							<input type="radio" bind:group={deliveryMethod} value="pickup" class="text-primary" />
+							<MapPin class="w-6 h-6 text-gray-600" />
+							<div>
+								<p class="font-medium">Вземане от офис</p>
+								<p class="text-sm text-gray-500">София, бул. Витоша 10</p>
 							</div>
-							<span class="font-medium text-green-600">Безплатно</span>
-						</label>
-					</div>
-				</RadioGroup>
+						</div>
+						<span class="font-medium text-green-600">Безплатно</span>
+					</label>
+				</div>
 			</div>
 			
 			<!-- Shipping Information -->
@@ -352,36 +348,34 @@
 			<!-- Payment Method -->
 			<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
 				<h2 class="text-xl font-semibold mb-4">Начин на плащане</h2>
-				<RadioGroup bind:value={paymentMethod}>
-					<div class="space-y-3">
-						<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-							<RadioGroupItem value="card" />
-							<CreditCard class="w-6 h-6" />
-							<div class="flex-1">
-								<p class="font-medium">Дебитна или кредитна карта</p>
-								<p class="text-sm text-gray-500">Visa, Mastercard, Maestro</p>
-							</div>
-						</label>
-						
-						<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-							<RadioGroupItem value="paypal" />
-							<Wallet class="w-6 h-6" />
-							<div class="flex-1">
-								<p class="font-medium">PayPal</p>
-								<p class="text-sm text-gray-500">Плащане през PayPal акаунт</p>
-							</div>
-						</label>
-						
-						<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-							<RadioGroupItem value="cash" />
-							<Building class="w-6 h-6" />
-							<div class="flex-1">
-								<p class="font-medium">Наложен платеж</p>
-								<p class="text-sm text-gray-500">Плащане в брой при доставка</p>
-							</div>
-						</label>
-					</div>
-				</RadioGroup>
+				<div class="space-y-3">
+					<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'card' ? 'border-primary bg-primary/5' : ''}">
+						<input type="radio" bind:group={paymentMethod} value="card" class="text-primary" />
+						<CreditCard class="w-6 h-6" />
+						<div class="flex-1">
+							<p class="font-medium">Дебитна или кредитна карта</p>
+							<p class="text-sm text-gray-500">Visa, Mastercard, Maestro</p>
+						</div>
+					</label>
+					
+					<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'paypal' ? 'border-primary bg-primary/5' : ''}">
+						<input type="radio" bind:group={paymentMethod} value="paypal" class="text-primary" />
+						<Wallet class="w-6 h-6" />
+						<div class="flex-1">
+							<p class="font-medium">PayPal</p>
+							<p class="text-sm text-gray-500">Плащане през PayPal акаунт</p>
+						</div>
+					</label>
+					
+					<label class="flex items-center gap-4 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 {paymentMethod === 'cash' ? 'border-primary bg-primary/5' : ''}">
+						<input type="radio" bind:group={paymentMethod} value="cash" class="text-primary" />
+						<Building class="w-6 h-6" />
+						<div class="flex-1">
+							<p class="font-medium">Наложен платеж</p>
+							<p class="text-sm text-gray-500">Плащане в брой при доставка</p>
+						</div>
+					</label>
+				</div>
 				
 				{#if paymentMethod === 'card'}
 					<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
