@@ -2,6 +2,9 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+
+	// Check if current page is women or men to hide header search
+	let isWomenOrMenPage = $derived($page.url.pathname === '/women' || $page.url.pathname === '/men');
 	import { Search, ShoppingBag, User, Heart, ChevronDown, MessageCircle, Home, Grid3x3, Plus, Bell } from '@lucide/svelte';
 	
 	import Button from '$lib/components/ui/button.svelte';
@@ -123,80 +126,172 @@
 			</div>
 		</div>
 		
-		<!-- Search bar -->
-		<div class="px-3 py-2 bg-gray-50">
-			<div class="flex h-10 bg-white rounded-lg border-2 border-primary/20 overflow-hidden">
-				<!-- Category dropdown -->
-				<button
-					onclick={() => showCategoriesDropdown = !showCategoriesDropdown}
-					data-dropdown
-					class="flex items-center gap-0.5 px-3 border-r border-gray-200"
-				>
-					<span class="text-sm">🛍️</span>
-					<ChevronDown class="h-3 w-3 text-gray-500" />
-				</button>
-				
-				<!-- Search input -->
-				<div class="flex-1 relative flex items-center">
-					<Search class="absolute left-3 h-4 w-4 text-gray-400" />
-					<input
-						type="text"
-						bind:value={searchQuery}
-						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
-						placeholder="Търси продукти..."
-						class="w-full h-full pl-9 pr-8 text-sm bg-white focus:outline-none"
-					/>
-					{#if searchQuery}
-						<button onclick={() => searchQuery = ''} class="absolute right-2 text-gray-400">
-							✕
-						</button>
-					{/if}
-				</div>
-			</div>
-			
-			<!-- Category dropdown -->
-			{#if showCategoriesDropdown}
-				<div class="absolute left-3 right-3 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-64 overflow-y-auto">
-					<div class="py-1">
-						{#each categoryOptions as category}
-							<button
-								onclick={() => selectCategory(category)}
-								class="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-							>
-								{#if category === 'All Categories'}
-									<span>🛍️</span> Всички
-								{:else}
-									<span>{categories.find(cat => cat.name === category)?.icon || '📦'}</span> {category}
-								{/if}
+		<!-- Search bar - Hide on women/men pages -->
+		{#if !isWomenOrMenPage}
+			<div class="px-3 py-2 bg-gray-50">
+				<div class="flex h-10 bg-white rounded-lg border-2 border-primary/20 overflow-hidden">
+					<!-- Category dropdown -->
+					<button
+						onclick={() => showCategoriesDropdown = !showCategoriesDropdown}
+						data-dropdown
+						class="flex items-center gap-0.5 px-3 border-r border-gray-200"
+					>
+						<span class="text-sm">🛍️</span>
+						<ChevronDown class="h-3 w-3 text-gray-500" />
+					</button>
+					
+					<!-- Search input -->
+					<div class="flex-1 relative flex items-center">
+						<Search class="absolute left-3 h-4 w-4 text-gray-400" />
+						<input
+							type="text"
+							bind:value={searchQuery}
+							onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+							placeholder="Търси продукти..."
+							class="w-full h-full pl-9 pr-8 text-sm bg-white focus:outline-none"
+						/>
+						{#if searchQuery}
+							<button onclick={() => searchQuery = ''} class="absolute right-2 text-gray-400">
+								✕
 							</button>
-						{/each}
+						{/if}
 					</div>
 				</div>
-			{/if}
-		</div>
+				
+				<!-- Enhanced Category dropdown with 2-column grid -->
+				{#if showCategoriesDropdown}
+					<div class="absolute left-3 right-3 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+						<div class="grid grid-cols-2 divide-x divide-gray-100">
+							<!-- Left Column: Categories -->
+							<div class="p-3">
+								<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-2">Категории</h3>
+								<div class="space-y-1">
+									<button onclick={() => { selectCategory('All Categories'); goto('/browse'); }} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">🛍️</span>
+										<span>Всички</span>
+									</button>
+									<button onclick={() => goto('/women')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-pink-50 rounded-lg transition-colors">
+										<span class="text-base">👗</span>
+										<span>Дамски</span>
+									</button>
+									<button onclick={() => goto('/men')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-blue-50 rounded-lg transition-colors">
+										<span class="text-base">👔</span>
+										<span>Мъжки</span>
+									</button>
+									<button onclick={() => goto('/kids')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-yellow-50 rounded-lg transition-colors">
+										<span class="text-base">🧸</span>
+										<span>Детски</span>
+									</button>
+									<button onclick={() => goto('/browse?category=shoes')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">👟</span>
+										<span>Обувки</span>
+									</button>
+									<button onclick={() => goto('/browse?category=bags')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">👜</span>
+										<span>Чанти</span>
+									</button>
+									<button onclick={() => goto('/browse?category=jackets')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">🧥</span>
+										<span>Якета</span>
+									</button>
+									<button onclick={() => goto('/browse?category=accessories')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">💍</span>
+										<span>Аксесоари</span>
+									</button>
+								</div>
+							</div>
+							
+							<!-- Right Column: Filters & Special -->
+							<div class="p-3">
+								<h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-2">Филтри</h3>
+								<div class="space-y-1">
+									<button onclick={() => goto('/browse?condition=new_with_tags')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-green-50 rounded-lg transition-colors">
+										<span class="text-base">🏷️</span>
+										<span>Ново с етикет</span>
+									</button>
+									<button onclick={() => goto('/browse?condition=like_new')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-green-50 rounded-lg transition-colors">
+										<span class="text-base">✨</span>
+										<span>Като ново</span>
+									</button>
+									<button onclick={() => goto('/browse?sort=newest')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-blue-50 rounded-lg transition-colors">
+										<span class="text-base">🆕</span>
+										<span>Най-нови</span>
+									</button>
+									<button onclick={() => goto('/browse?sale=true')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-red-50 rounded-lg transition-colors text-red-700">
+										<span class="text-base">🔥</span>
+										<span>Намаления</span>
+									</button>
+									<button onclick={() => goto('/browse?featured=true')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-purple-50 rounded-lg transition-colors">
+										<span class="text-base">⭐</span>
+										<span>Препоръчани</span>
+									</button>
+									<button onclick={() => goto('/browse?premium=true')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-yellow-50 rounded-lg transition-colors">
+										<span class="text-base">💎</span>
+										<span>Премиум</span>
+									</button>
+									<button onclick={() => goto('/browse?category=vintage')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-amber-50 rounded-lg transition-colors">
+										<span class="text-base">🕰️</span>
+										<span>Винтидж</span>
+									</button>
+									<button onclick={() => goto('/browse?price=under_50')} class="w-full flex items-center gap-2 px-2 py-2 text-sm hover:bg-gray-50 rounded-lg transition-colors">
+										<span class="text-base">💰</span>
+										<span>До 50лв</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
+		{/if}
 		
-		<!-- Quick pills - hide when scrolled -->
-		{#if !isScrolled}
-			<div class="px-3 pt-0.5 pb-1.5 bg-white border-b border-gray-100">
-				<div class="flex gap-2 overflow-x-auto pb-0.5" style="scrollbar-width: none; -ms-overflow-style: none;">
-					<button onclick={() => goto('/browse?gender=women')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👗 Жени</button>
-					<button onclick={() => goto('/browse?gender=men')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👔 Мъже</button>
-					<button onclick={() => goto('/browse?gender=kids')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">🧸 Деца</button>
-					<button onclick={() => goto('/browse?category=vintage')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">⭐ Винтидж</button>
-					<button onclick={() => goto('/browse?brand=luxury')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">💎 Луксозни</button>
-					<button onclick={() => goto('/browse?condition=new_with_tags')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">🏷️ Ново с етикет</button>
-					<button onclick={() => goto('/browse?condition=like_new')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">✨ Като ново</button>
-					<button onclick={() => goto('/browse?condition=very_good')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👌 Много добро</button>
-					<button onclick={() => goto('/browse?category=shoes')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👟 Обувки</button>
-					<button onclick={() => goto('/browse?category=bags')} class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs font-medium whitespace-nowrap text-gray-700">👜 Чанти</button>
-					<button onclick={() => goto('/browse?sale=true')} class="px-3 py-1.5 bg-red-500 rounded-full text-xs font-medium whitespace-nowrap text-white">🔥 Намаления</button>
+		<!-- Emoji Categories - hide when scrolled or on women/men pages -->
+		{#if !isScrolled && !isWomenOrMenPage}
+			<div class="px-3 pt-1 pb-2 bg-white border-b border-gray-100">
+				<div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">
+					<button onclick={() => goto('/women')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">👗</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Жени</span>
+					</button>
+					<button onclick={() => goto('/men')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">👔</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Мъже</span>
+					</button>
+					<button onclick={() => goto('/kids')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">🧸</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Деца</span>
+					</button>
+					<button onclick={() => goto('/browse?category=shoes')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">👟</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Обувки</span>
+					</button>
+					<button onclick={() => goto('/browse?category=bags')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">👜</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Чанти</span>
+					</button>
+					<button onclick={() => goto('/browse?category=jackets')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">🧥</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Якета</span>
+					</button>
+					<button onclick={() => goto('/browse?category=vintage')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">⭐</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Винтидж</span>
+					</button>
+					<button onclick={() => goto('/browse?brand=luxury')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
+						<span class="text-lg mb-0.5">💎</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Луксозни</span>
+					</button>
+					<button onclick={() => goto('/browse?sale=true')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-red-600 hover:bg-red-50">
+						<span class="text-lg mb-0.5">🔥</span>
+						<span class="text-[9px] font-medium whitespace-nowrap">Намаления</span>
+					</button>
 				</div>
 			</div>
 		{/if}
 	</div>
 	
-	<!-- Spacer -->
-	<div style="height: {isScrolled ? '96px' : '128px'}"></div>
+	<!-- Spacer - Smaller for women/men pages -->
+	<div style="height: {isWomenOrMenPage ? '44px' : (isScrolled ? '96px' : '128px')}"></div>
 </div>
 
 <!-- Desktop Header -->

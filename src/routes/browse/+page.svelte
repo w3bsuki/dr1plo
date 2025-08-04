@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Search, Filter, ChevronDown } from '@lucide/svelte';
 	import { ProductGrid } from '$lib/components/marketplace';
-	import Button from '$lib/components/ui/button.svelte';
-	import Input from '$lib/components/ui/input/input.svelte';
-	import Badge from '$lib/components/ui/badge.svelte';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
 	
 	let { data }: { data: PageData } = $props();
 	
@@ -15,43 +10,6 @@
 	let category = $state($page.url.searchParams.get('category') || '');
 	let sort = $state($page.url.searchParams.get('sort') || 'newest');
 	let type = $state($page.url.searchParams.get('type') || '');
-	
-	// Scroll state for UI changes
-	let scrollY = $state(0);
-	let showCategoryDropdown = $state(false);
-	let isScrolled = $derived(scrollY > 20); // Lower threshold for better UX
-	
-	// Debug scroll values
-	$effect(() => {
-		console.log('ScrollY:', scrollY, 'IsScrolled:', isScrolled);
-	});
-	
-	// Comprehensive categories with emojis
-	const categories = [
-		{ id: 'womens', label: 'Дамски', emoji: '👩', subcategories: ['Дрехи', 'Обувки', 'Чанти', 'Аксесоари'] },
-		{ id: 'mens', label: 'Мъжки', emoji: '👨', subcategories: ['Дрехи', 'Обувки', 'Часовници', 'Аксесоари'] },
-		{ id: 'kids', label: 'Детски', emoji: '👶', subcategories: ['Бебешки', '0-2 год.', '3-8 год.', '9-16 год.'] },
-		{ id: 'shoes', label: 'Обувки', emoji: '👟', subcategories: ['Маратонки', 'Официални', 'Високи', 'Сандали'] },
-		{ id: 'bags', label: 'Чанти', emoji: '👜', subcategories: ['Ръчни', 'Раници', 'Портмонета', 'Куфари'] },
-		{ id: 'accessories', label: 'Аксесоари', emoji: '💍', subcategories: ['Бижута', 'Часовници', 'Слънчеви очила', 'Шалове'] },
-		{ id: 'vintage', label: 'Vintage', emoji: '🕰️', subcategories: ['90-те', '2000-те', 'Ретро', 'Колекционерски'] },
-		{ id: 'luxury', label: 'Луксозни', emoji: '💎', subcategories: ['Gucci', 'Prada', 'Louis Vuitton', 'Chanel'] }
-	];
-	
-	onMount(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			const target = event.target as Element;
-			if (showCategoryDropdown && !target.closest('.category-dropdown')) {
-				showCategoryDropdown = false;
-			}
-		};
-		
-		document.addEventListener('click', handleClickOutside);
-		
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
 	
 	// Mock data for now - TODO: Replace with real Supabase data
 	const products = [
@@ -122,9 +80,6 @@
 		}
 	];
 	
-	// Get selected category info
-	const selectedCategory = $derived(categories.find(cat => cat.id === category));
-	
 	// Determine page title based on parameters
 	let pageTitle = $derived.by(() => {
 		if (searchQuery) return `Резултати за "${searchQuery}"`;
@@ -167,108 +122,10 @@
 	<title>{pageTitle} - Driplo.bg</title>
 </svelte:head>
 
-<svelte:window bind:scrollY />
-
+<!-- Clean browse page - just like the reference image -->
 <div class="min-h-screen bg-gray-50">
-	<!-- Header with search and category dropdown -->
-	<div class="bg-white border-b sticky top-14 z-40 transition-all duration-300 {isScrolled ? 'shadow-md' : ''}">
-		<div class="container mx-auto px-4 {isScrolled ? 'py-2' : 'py-4'} transition-all duration-300">
-			<!-- Main Search Row -->
-			<div class="flex gap-3 {isScrolled || !selectedCategory ? 'mb-0' : 'mb-4'} transition-all duration-300">
-				<!-- Search Bar -->
-				<div class="flex-1 relative">
-					<div class="flex items-center bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-						<Search class="absolute left-3 h-4 w-4 text-gray-400" />
-						<input
-							type="text"
-							bind:value={searchQuery}
-							placeholder="Търси продукти, марки..."
-							class="w-full pl-10 pr-4 py-3 text-sm bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						/>
-					</div>
-				</div>
-				
-				<!-- Category Dropdown -->
-				<div class="relative category-dropdown">
-					<button
-						onclick={() => showCategoryDropdown = !showCategoryDropdown}
-						class="flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors min-w-[140px]"
-					>
-						{#if selectedCategory}
-							<span>{selectedCategory.emoji}</span>
-							<span>{selectedCategory.label}</span>
-						{:else}
-							<Filter class="h-4 w-4" />
-							<span>Категории</span>
-						{/if}
-						<ChevronDown class="h-4 w-4 ml-auto transition-transform {showCategoryDropdown ? 'rotate-180' : ''}" />
-					</button>
-					
-					<!-- Dropdown Menu -->
-					{#if showCategoryDropdown}
-						<div class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[380px]">
-							<div class="p-4">
-								<div class="grid grid-cols-2 gap-4">
-									{#each categories as cat}
-										<button
-											onclick={() => {
-												category = category === cat.id ? '' : cat.id;
-												showCategoryDropdown = false;
-											}}
-											class="text-left p-3 rounded-lg hover:bg-gray-50 transition-colors border {category === cat.id ? 'border-primary bg-primary/5' : 'border-gray-100'}"
-										>
-											<div class="flex items-center gap-2 mb-2">
-												<span class="text-lg">{cat.emoji}</span>
-												<span class="font-medium text-gray-900">{cat.label}</span>
-											</div>
-											<div class="text-xs text-gray-500 space-y-1">
-												{#each cat.subcategories as sub}
-													<div>{sub}</div>
-												{/each}
-											</div>
-										</button>
-									{/each}
-								</div>
-							</div>
-						</div>
-					{/if}
-				</div>
-				
-				<!-- Search Button -->
-				<Button class="bg-primary text-white hover:bg-primary/90 px-6 py-3 rounded-lg whitespace-nowrap">
-					Търси
-				</Button>
-			</div>
-			
-			<!-- Quick category pills - hide when scrolled -->
-			{#if selectedCategory && !isScrolled}
-				<div class="flex items-center gap-2 text-sm">
-					<span class="text-gray-500">Филтри:</span>
-					<div class="flex gap-2">
-						<Badge variant="secondary" class="flex items-center gap-1">
-							<span>{selectedCategory.emoji}</span>
-							<span>{selectedCategory.label}</span>
-							<button onclick={() => category = ''} aria-label="Remove category filter" class="ml-1 hover:bg-gray-200 rounded-full p-0.5">
-								<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-								</svg>
-							</button>
-						</Badge>
-					</div>
-				</div>
-			{/if}
-		</div>
-	</div>
-	
-	<!-- Results -->
-	<div class="container mx-auto px-4 py-6">
-		<!-- Results header -->
-		<div class="mb-6">
-			<h1 class="text-2xl font-bold text-gray-900 mb-2">{pageTitle}</h1>
-			<p class="text-gray-600">{filteredProducts.length} намерени продукта</p>
-		</div>
-		
-		<!-- Product Grid with filters -->
+	<!-- Product Grid - Clean and minimal -->
+	<div class="pt-4">
 		<ProductGrid 
 			products={filteredProducts}
 			title=""

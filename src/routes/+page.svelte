@@ -224,113 +224,41 @@
 </section>
 
 <!-- Mobile Clean Layout -->
-<section class="md:hidden bg-white pt-4 pb-4">
+<section class="md:hidden bg-white pt-20 pb-4">
 	<div class="space-y-6 pb-4">
 		<!-- Най-нови обяви -->
-		<section class="mx-4 space-y-3">
-			<div class="bg-gradient-to-r from-blue-600 to-cyan-600 border border-blue-700 rounded-xl p-4 shadow-lg">
-				<div class="flex items-center justify-between">
-					<h3 class="font-semibold text-white flex items-center gap-2">
-						<span class="text-lg">🆕</span>
-						Най-нови обяви
-					</h3>
-					<button onclick={() => goto('/browse?sort=newest')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
-						Виж всички →
-					</button>
-				</div>
-			</div>
-			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+		<section class="mx-4">
+			<div class="grid grid-cols-2 gap-2">
 				{#each newestProducts as product}
-					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
-						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
-					</div>
+					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
 				{/each}
 			</div>
 		</section>
 
 		<!-- Премиум обяви -->
-		<section class="mx-4 space-y-3">
-			<div class="bg-gradient-to-r from-amber-600 to-yellow-600 border border-amber-700 rounded-xl p-4 shadow-lg">
-				<div class="flex items-center justify-between">
-					<h3 class="font-semibold text-white flex items-center gap-2">
-						<span class="text-lg">✨</span>
-						Премиум обяви
-					</h3>
-					<button onclick={() => goto('/browse?type=premium')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
-						Виж всички →
-					</button>
-				</div>
-			</div>
-			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+		<section class="mx-4">
+			<div class="grid grid-cols-2 gap-2">
 				{#each premiumProducts as product}
-					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
-						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
-					</div>
+					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
 				{/each}
-				{#if premiumProducts.length === 0}
-					<div class="w-full text-center py-8 text-gray-500">
-						Няма премиум обяви в момента
-					</div>
-				{/if}
 			</div>
 		</section>
 
 
 		<!-- Обяви на брандове -->
-		<section class="mx-4 space-y-3">
-			<div class="bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-700 rounded-xl p-4 shadow-lg">
-				<div class="flex items-center justify-between">
-					<h3 class="font-semibold text-white flex items-center gap-2">
-						<span class="text-lg">🏢</span>
-						Обяви на брандове
-					</h3>
-					<button onclick={() => goto('/brands')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors">
-						Виж всички →
-					</button>
-				</div>
-			</div>
-			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+		<section class="mx-4">
+			<div class="grid grid-cols-2 gap-2">
 				{#each brandProducts as product}
-					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
-						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
-					</div>
+					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
 				{/each}
-				{#if brandProducts.length === 0}
-					<div class="w-full text-center py-8 text-gray-500">
-						Няма обяви от брандове в момента
-					</div>
-				{/if}
 			</div>
 		</section>
 
 		<!-- Топ продавачи -->
-		<section class="mx-4 space-y-3">
-			<div class="bg-gradient-to-r from-emerald-600 to-teal-600 border border-emerald-700 rounded-xl p-4 shadow-lg">
-				<div class="flex items-center justify-between">
-					<h3 class="font-semibold text-white flex items-center gap-2">
-						<span class="text-lg">⭐</span>
-						Топ продавачи
-					</h3>
-					<div class="flex items-center gap-2">
-						<div class="flex -space-x-2">
-							<img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
-							<img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
-							<img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=24&h=24&fit=crop&crop=face" alt="" class="w-6 h-6 rounded-full border-2 border-white shadow-sm" />
-							<div class="w-6 h-6 rounded-full border-2 border-white bg-white shadow-sm flex items-center justify-center">
-								<span class="text-xs font-medium text-emerald-600">1K+</span>
-							</div>
-						</div>
-						<button onclick={() => goto('/sellers')} class="text-sm text-black bg-white/90 hover:bg-white px-3 py-1 rounded-full font-medium transition-colors ml-2">
-							Виж всички →
-						</button>
-					</div>
-				</div>
-			</div>
-			<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+		<section class="mx-4">
+			<div class="grid grid-cols-2 gap-2">
 				{#each topSellerProducts as product}
-					<div class="w-[calc(50%-6px)] min-w-[calc(50%-6px)] flex-shrink-0">
-						<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
-					</div>
+					<ProductCard {product} onclick={() => goto(`/products/${product.id}`)} />
 				{/each}
 			</div>
 		</section>

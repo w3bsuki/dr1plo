@@ -58,7 +58,7 @@
 </script>
 
 <div 
-	class="group relative bg-white rounded-xl border border-gray-100 cursor-pointer overflow-hidden hover:shadow-xl hover:border-gray-200 transition-all duration-300"
+	class="group relative bg-white rounded-lg cursor-pointer overflow-hidden hover:shadow-md transition-all duration-200"
 	onclick={onclick}
 	role="button"
 	tabindex="0"
@@ -134,84 +134,46 @@
 		{/if}
 	</div>
 	
-	<!-- Product Info -->
-	<div class="p-3 space-y-2">
-		<!-- Brand & Title -->
-		<div>
-			<p class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 mb-0.5">
-				{product.brand}
-			</p>
-			<h3 class="text-sm font-medium text-gray-900 line-clamp-1 hover:text-primary transition-colors">
-				{product.title}
-			</h3>
-		</div>
-		
-		<!-- Size & Location -->
-		<div class="flex items-center gap-3 text-[11px] text-gray-500">
-			<span class="font-medium">Размер {product.size}</span>
-			{#if product.location}
-				<div class="flex items-center gap-0.5">
-					<MapPin class="w-3 h-3" />
-					<span>{product.location}</span>
-				</div>
-			{/if}
-		</div>
-		
+	<!-- Product Info - Compact like Vinted -->
+	<div class="p-2 space-y-1">
 		<!-- Price -->
-		<div class="flex items-baseline gap-2">
-			<span class="text-lg font-bold text-gray-900">
+		<div class="flex items-baseline gap-1.5">
+			<span class="text-sm font-bold text-gray-900">
 				{product.price} лв
 			</span>
 			{#if product.originalPrice}
-				<span class="text-xs text-gray-400 line-through">
+				<span class="text-[10px] text-gray-400 line-through">
 					{product.originalPrice} лв
 				</span>
 			{/if}
 		</div>
 		
-		<!-- Seller Info - Clean & Simple -->
-		<div class="flex items-center gap-2 pt-2 border-t border-gray-100">
-			<LazyAvatar 
-				src={product.seller.avatar} 
-				username={product.seller.name}
-				size="xs"
-				eager={false}
-			/>
-			<div class="flex-1 min-w-0">
-				<p class="text-xs font-medium text-gray-700 truncate">
-					{product.seller.name}
-				</p>
-			</div>
-			<div class="flex items-center gap-0.5">
-				<Star class="w-3 h-3 fill-yellow-400 text-yellow-400" />
-				<span class="text-[11px] font-medium text-gray-600">
-					{product.seller.rating}
-				</span>
-			</div>
-		</div>
+		<!-- Size -->
+		<p class="text-[10px] text-gray-500">
+			Размер {product.size}
+		</p>
 		
-		<!-- Stats Row -->
+		<!-- Brand -->
+		<p class="text-[10px] text-gray-600 font-medium">
+			{product.brand}
+		</p>
+		
+		<!-- Stats Row (optional) -->
 		{#if product.view_count !== undefined || product.like_count !== undefined}
-			<div class="flex items-center gap-3 text-[11px] text-gray-400 pt-2">
+			<div class="flex items-center gap-2 text-[9px] text-gray-400">
 				{#if product.view_count !== undefined}
-					<div class="flex items-center gap-1">
-						<Eye class="w-3 h-3" />
-						<span>{product.view_count} прегледа</span>
+					<div class="flex items-center gap-0.5">
+						<Eye class="w-2.5 h-2.5" />
+						<span>{product.view_count}</span>
 					</div>
 				{/if}
 				{#if product.like_count !== undefined}
-					<div class="flex items-center gap-1">
-						<Heart class="w-3 h-3" />
-						<span>{product.like_count} харесвания</span>
+					<div class="flex items-center gap-0.5">
+						<Heart class="w-2.5 h-2.5" />
+						<span>{product.like_count}</span>
 					</div>
 				{/if}
 			</div>
-		{/if}
-		
-		{#if product.timeAgo}
-			<p class="text-[10px] text-gray-400 text-center">
-				{product.timeAgo}
-			</p>
 		{/if}
 	</div>
 </div>
