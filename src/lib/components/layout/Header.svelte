@@ -3,8 +3,19 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 
-	// Check if current page is women or men to hide header search
+	// Check which pages should have special header treatment
 	let isWomenOrMenPage = $derived($page.url.pathname === '/women' || $page.url.pathname === '/men');
+	let isSpecialPage = $derived(
+		isWomenOrMenPage ||
+		$page.url.pathname === '/sell' ||
+		$page.url.pathname.startsWith('/auth/') ||
+		$page.url.pathname.startsWith('/products/')
+	);
+	let shouldHideBottomNav = $derived(
+		$page.url.pathname === '/sell' ||
+		$page.url.pathname.startsWith('/auth/') ||
+		$page.url.pathname.startsWith('/products/')
+	);
 	import { Search, ShoppingBag, User, Heart, ChevronDown, MessageCircle, Home, Grid3x3, Plus, Bell } from '@lucide/svelte';
 	
 	import Button from '$lib/components/ui/button.svelte';
@@ -126,8 +137,8 @@
 			</div>
 		</div>
 		
-		<!-- Search bar - Hide on women/men pages -->
-		{#if !isWomenOrMenPage}
+		<!-- Search bar - Hide on special pages -->
+		{#if !isSpecialPage}
 			<div class="px-3 py-2 bg-gray-50">
 				<div class="flex h-10 bg-white rounded-lg border-2 border-primary/20 overflow-hidden">
 					<!-- Category dropdown -->
@@ -245,8 +256,8 @@
 			</div>
 		{/if}
 		
-		<!-- Emoji Categories - hide when scrolled or on women/men pages -->
-		{#if !isScrolled && !isWomenOrMenPage}
+		<!-- Emoji Categories - hide when scrolled or on special pages -->
+		{#if !isScrolled && !isSpecialPage}
 			<div class="px-3 pt-1 pb-2 bg-white border-b border-gray-100">
 				<div class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width: none; -ms-overflow-style: none;">
 					<button onclick={() => goto('/women')} class="flex flex-col items-center min-w-12 py-1.5 px-2 rounded-lg transition-colors text-gray-600 hover:bg-gray-50">
@@ -290,8 +301,8 @@
 		{/if}
 	</div>
 	
-	<!-- Spacer - Smaller for women/men pages -->
-	<div style="height: {isWomenOrMenPage ? '44px' : (isScrolled ? '96px' : '128px')}"></div>
+	<!-- Spacer - Adjust based on page type -->
+	<div style="height: {isSpecialPage ? '44px' : (isScrolled ? '96px' : '128px')}"></div>
 </div>
 
 <!-- Desktop Header -->
@@ -387,7 +398,8 @@
 	</div>
 </header>
 
-<!-- Bottom Navigation -->
+<!-- Bottom Navigation - Hide on special pages -->
+{#if !shouldHideBottomNav}
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
 	<div class="flex items-center justify-around py-1.5">
 		<a href="/" class="flex flex-col items-center gap-0.5 p-1.5 {$page.url.pathname === '/' ? 'text-primary' : 'text-gray-500'}">
@@ -415,3 +427,4 @@
 		</a>
 	</div>
 </nav>
+{/if}

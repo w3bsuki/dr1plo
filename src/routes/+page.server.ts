@@ -78,8 +78,7 @@ export const load: PageServerLoad = async ({ fetch, locals: { safeGetSession } }
 					profiles!listings_seller_id_fkey (username, avatar_url, seller_rating, seller_rating_count)
 				`)
 				.eq('status', 'active')
-				.gte('profiles.seller_rating', 4.7)
-				.order('profiles.seller_rating', { ascending: false })
+				.order('created_at', { ascending: false })
 				.limit(10)
 		]);
 

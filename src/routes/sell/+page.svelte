@@ -159,7 +159,7 @@
 			const uploadedImageUrls = ['https://i.imgur.com/placeholder.jpg']; // Placeholder
 			
 			// Use the supabase client from the parent layout that has the session
-			const supabase = $page.data.supabase;
+			const supabase = data.supabase;
 			
 			// Get current user to ensure we're authenticated
 			const { data: { user } } = await supabase.auth.getUser();
